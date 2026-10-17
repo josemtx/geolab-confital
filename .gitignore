@@ -3,5 +3,3 @@ dist
 .DS_Store
 .env
 __pycache__/
-# Respuestas individuales: no se publican hasta decidirlo (ver PLAN_WEB.md)
-public/data/encuestas.json

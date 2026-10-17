@@ -97,8 +97,12 @@ def encuestas():
             t.loc[filas, k] = v
         aplicadas.append({**cor, "filas": int(filas.sum())})
     t["Procedencia"] = t["Procedencia"].replace(UNIFICAR)
+    # La misma respuesta escrita de dos formas, y la escala de saturación con los nombres de Adrián.
+    t["Que_harias_mas_usuarios"] = t["Que_harias_mas_usuarios"].replace({"Ir a otra playa cercana": "Ir a una playa cercana"})
+    t["Numero_usuarios_percibido"] = t["Numero_usuarios_percibido"].replace({"Excesivo": "Muy alto"})
     t["Dia_mes"] = pd.to_datetime(t["Dia_mes"]).dt.strftime("%Y-%m-%d")
-    t["Modalidad"] = t["Dia_mes"].map(lambda d: "Presencial" if d in {"2025-12-30", "2026-01-03", "2026-03-07"} else "Online")
+    # Presencial = se contó a la gente de la playa en ese turno (Usuarios_totales); el resto, online. Da 120 / 54, como el TFM.
+    t["Modalidad"] = t["Usuarios_totales"].map(lambda v: "Presencial" if pd.notna(v) else "Online")
     t["Fuente"] = "Estudio TFM"
     return t, aplicadas
 
@@ -213,7 +217,8 @@ if __name__ == "__main__":
     print("Generando public/data/ …")
     t, aplicadas = encuestas()
     cont, cap = conteos(), capacidad()
-    guardar("encuestas.json", json.loads(t.to_json(orient="records", force_ascii=False)))
+    # Se publican anónimas: sin número de encuesta (no aporta nada y evitaría cruzar respuestas).
+    guardar("encuestas.json", json.loads(t.drop(columns=["Numero_Encuesta"]).to_json(orient="records", force_ascii=False)))
     guardar("conteos.json", cont)
     guardar("capacidad.json", cap)
     guardar("correcciones.json", [{k: v for k, v in a.items()} for a in aplicadas])

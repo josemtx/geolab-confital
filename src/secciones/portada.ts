@@ -25,7 +25,7 @@ export function portada() {
   const girar = () => {
     if (!visible || girando || movimientoReducido()) return;
     girando = true;
-    mapa.easeTo({ bearing: mapa.getBearing() - 20, duration: 30000, easing: (t: number) => t });
+    mapa.easeTo({ bearing: mapa.getBearing() - 4, duration: 6000, easing: (t: number) => t });
     mapa.once("moveend", () => {
       girando = false;
       girar();
@@ -43,7 +43,6 @@ export function portada() {
 
   new IntersectionObserver(([e]) => {
     visible = e.isIntersecting;
-    if (visible) girar();
-    else if (girando) mapa.stop();
+    if (visible) girar(); // al salir de pantalla, el tramo en curso termina y no se encadena otro
   }).observe(cont);
 }

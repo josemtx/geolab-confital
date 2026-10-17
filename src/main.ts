@@ -2,6 +2,7 @@ import "./estilos.css";
 import { partirPalabras, revelar } from "./comun";
 import { conteos } from "./secciones/conteos";
 import { embudo } from "./secciones/embudo";
+import { panel } from "./secciones/panel";
 import { portada } from "./secciones/portada";
 import { unidades } from "./secciones/unidades";
 
@@ -30,3 +31,4 @@ portada();
 embudo();
 unidades();
 conteos();
+panel().then(revelar);
