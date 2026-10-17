@@ -113,8 +113,9 @@ def conteos():
         if "ENTRADAS" not in cab.upper():
             continue
         tipo = "Pico" if "PICO" in cab.upper() else "Valle"
-        mes = re.split(r"[-–]", cab, maxsplit=1)[-1].strip() if "-" in cab else cab.upper().split("VALLE")[-1].strip()
-        mes = {"ENERO/DICIEMBRE": "Diciembre/Enero", "ENERO-DICIEMBRE": "Diciembre/Enero"}.get(mes.upper().replace(" ", ""), mes.capitalize())
+        # Lo que va detrás de «VALLE» o «PICO»: «- MARZO», «ENERO-DICIEMBRE», «- ENERO/DICIEMBRE»…
+        resto = re.split(r"VALLE|PICO", cab.upper(), maxsplit=1)[-1].strip(" -–")
+        mes = "Diciembre/Enero" if "ENERO" in resto and "DICIEMBRE" in resto else resto.strip().capitalize()
         franjas = []
         for _, f in c.iloc[i + 1:i + 11].iterrows():
             num = lambda v: None if pd.isna(v) else int(v)
