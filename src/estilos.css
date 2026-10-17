@@ -506,6 +506,16 @@ p {
   overflow: hidden;
   background: var(--noche);
 }
+/* «Cielo»: funde el horizonte (mar abierto sin ortofoto) con el azul noche. */
+.mapa-unidades::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 32%;
+  pointer-events: none;
+  z-index: 1;
+  background: linear-gradient(180deg, var(--noche) 0%, rgb(11 16 32 / 0.6) 45%, rgb(11 16 32 / 0) 100%);
+}
 @media (max-width: 860px) {
   .mapa-unidades {
     border-radius: 0;

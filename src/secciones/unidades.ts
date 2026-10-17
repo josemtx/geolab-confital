@@ -96,7 +96,7 @@ export async function unidades() {
         suben.forEach((c) => (alturas[c] = desde[c] + (ALTURA[c] - desde[c]) * t));
         pintar();
       });
-      mapa.fitBounds(unir(cods.length ? cods : todas), { padding: esMovil() ? 30 : 80, pitch: 55, bearing: 40, duration: 1600, maxZoom: 16.6 });
+      mapa.fitBounds(unir(cods.length ? cods : todas), { padding: esMovil() ? 30 : 80, pitch: cods.length ? 55 : 45, bearing: 40, duration: 1600, maxZoom: 16.6 });
     };
 
     pasos(pasosEl, (i) => {
