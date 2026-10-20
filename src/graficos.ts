@@ -219,10 +219,10 @@ export function mosaico(el: HTMLElement, cats: Cat[], o: { titulo: string }) {
         const c = h.data as Cat, bw = h.x1 - h.x0, bh = h.y1 - h.y0;
         const tinta = claro(c.color) ? "#111827" : "#fff";
         const grande = bw > 120 && bh > 70, medio = bw > 54 && bh > 40;
-        const tamIcono = Math.min(44, Math.max(16, Math.min(bw, bh) * 0.32));
+        const tamIcono = Math.min(72, Math.max(18, Math.min(bw, bh) * 0.42));
         return `<g data-info="${esc(c.etiqueta)}: ${c.n} (${fmtPct(c.n, T)})">
           <rect x="${h.x0}" y="${h.y0}" width="${bw}" height="${bh}" rx="8" fill="${c.color}"/>
-          ${medio ? `<text x="${h.x0 + 10}" y="${h.y0 + tamIcono + 6}" font-size="${tamIcono}">${c.icono ?? ""}</text>` : ""}
+          ${medio ? `<text x="${(h.x0 + h.x1) / 2}" y="${(h.y0 + h.y1) / 2 - (grande ? 14 : 4)}" font-size="${tamIcono}" text-anchor="middle" dominant-baseline="middle">${c.icono ?? ""}</text>` : ""}
           ${grande ? `<text x="${h.x0 + 10}" y="${h.y1 - 30}" font-size="14" font-weight="650" fill="${tinta}">${esc(c.etiqueta.length * 7.5 > bw - 16 ? c.etiqueta.slice(0, Math.floor((bw - 16) / 7.5)) + "…" : c.etiqueta)}</text>` : ""}
           ${medio ? `<text x="${h.x0 + 10}" y="${h.y1 - 10}" font-size="${grande ? 22 : 13}" font-weight="780" fill="${tinta}">${fmtPct(c.n, T)}</text>` : ""}</g>`;
       })

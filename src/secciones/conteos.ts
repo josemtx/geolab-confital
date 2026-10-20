@@ -70,7 +70,7 @@ function graficoEntradas(dias: Dia[], color: Map<Dia, string>) {
     leyenda.innerHTML = visibles
       .slice()
       .sort((a, b) => ORDEN_MESES.indexOf(a.periodo) - ORDEN_MESES.indexOf(b.periodo) || a.tipo_dia.localeCompare(b.tipo_dia))
-      .map((d, k) => `<li><button type="button" aria-pressed="${destacado === d}" data-k="${k}"><span class="muestra" style="--c:${color.get(d)}"></span>${d.periodo}${tipo === "Todos" ? (d.tipo_dia === "Pico" ? " · mucha gente" : " · tranquilo") : ""} · ${d.total_entradas.toLocaleString("es-ES")}</button></li>`)
+      .map((d, k) => `<li><button type="button" aria-pressed="${destacado === d}" data-k="${k}"><span class="muestra" style="--c:${color.get(d)}"></span>${d.periodo}${tipo === "Todos" ? (d.tipo_dia === "Pico" ? " · alta afluencia" : " · baja afluencia") : ""} · ${d.total_entradas.toLocaleString("es-ES")}</button></li>`)
       .join("");
     const ordenLeyenda = visibles.slice().sort((a, b) => ORDEN_MESES.indexOf(a.periodo) - ORDEN_MESES.indexOf(b.periodo) || a.tipo_dia.localeCompare(b.tipo_dia));
     leyenda.querySelectorAll<HTMLButtonElement>("button").forEach((b) =>
@@ -113,7 +113,7 @@ function graficoReposo(dias: Dia[]) {
       const bx = x(d.periodo)! + sub(d.tipo_dia)!;
       const supera = v > LIMITE;
       const c = d.tipo_dia === "Pico" ? "var(--pico)" : "var(--valle)";
-      return `<rect x="${bx}" y="${y(v)}" width="${sub.bandwidth()}" height="${y(0) - y(v)}" rx="5" fill="${c}" opacity="${supera ? 1 : 0.55}"><title>${d.periodo} · ${d.tipo_dia === "Pico" ? "día de mucha gente" : "día tranquilo"}: ${v} personas</title></rect>
+      return `<rect x="${bx}" y="${y(v)}" width="${sub.bandwidth()}" height="${y(0) - y(v)}" rx="5" fill="${c}" opacity="${supera ? 1 : 0.55}"><title>${d.periodo} · ${d.tipo_dia === "Pico" ? "día de alta afluencia" : "día de baja afluencia"}: ${v} personas</title></rect>
         ${supera ? `<text x="${bx + sub.bandwidth() / 2}" y="${y(v) - 8}" text-anchor="middle" font-size="${estrecho ? 12 : 15}" font-weight="700" fill="var(--pico)">${v}</text>` : ""}`;
     })
     .join("");

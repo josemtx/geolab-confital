@@ -6,10 +6,10 @@ import { animar, pasos } from "../comun";
 const TOTAL = 283;
 const COLS = 23;
 const FACTORES = [
-  { icono: "🌧️", nombre: "Días de lluvia", f: 0.81 },
+  { icono: "🌧️", nombre: "Precipitación", f: 0.81 },
   { icono: "💨", nombre: "Viento fuerte", f: 0.61 },
-  { icono: "🌱", nombre: "Vegetación que vuelve a crecer", f: 0.71 },
-  { icono: "🌡️", nombre: "Calor excesivo", f: 0.95 },
+  { icono: "🌱", nombre: "Recolonización vegetal", f: 0.71 },
+  { icono: "🌡️", nombre: "Estrés térmico", f: 0.95 },
 ];
 const REAL = 94;
 const EFECTIVA = 24;
@@ -32,7 +32,7 @@ export function embudo() {
     <svg viewBox="0 0 ${COLS * c} ${filas * c}" role="img" aria-label="Cada punto es una persona">
       ${rango.map((r, i) => `<circle data-r="${r}" cx="${(i % COLS) * c + c / 2}" cy="${Math.floor(i / COLS) * c + c / 2}" r="8" />`).join("")}
     </svg>
-    <div aria-live="polite"><div class="embudo__cifra" data-cifra>283</div><p class="embudo__etiqueta" data-etiqueta>personas caben por espacio</p></div>`;
+    <div aria-live="polite"><div class="embudo__cifra" data-cifra>283</div><p class="embudo__etiqueta" data-etiqueta>personas · capacidad de carga física</p></div>`;
   const puntos = [...cont.querySelectorAll<SVGCircleElement>("circle")];
   const cifra = cont.querySelector<HTMLElement>("[data-cifra]")!;
   const etiqueta = cont.querySelector<HTMLElement>("[data-etiqueta]")!;
@@ -84,7 +84,7 @@ export function embudo() {
     limpiar();
     if (i === 0) {
       pintar(TOTAL);
-      contar(TOTAL, "personas caben por espacio");
+      contar(TOTAL, "personas · capacidad de carga física");
     } else if (i === 1) {
       // Cada factor se come su parte, uno detrás de otro.
       ETAPAS.forEach((n, k) =>
@@ -92,13 +92,13 @@ export function embudo() {
           window.setTimeout(() => {
             lista?.querySelectorAll("li").forEach((li, j) => li.classList.toggle("activo", j === k));
             pintar(n);
-            contar(n, k === ETAPAS.length - 1 ? "personas, descontando el clima" : FACTORES[k].nombre.toLowerCase());
+            contar(n, k === ETAPAS.length - 1 ? "personas · capacidad de carga real" : FACTORES[k].nombre.toLowerCase());
           }, k * 900),
         ),
       );
     } else if (i === 2) {
       pintar(EFECTIVA);
-      contar(EFECTIVA, "personas a la vez con los servicios actuales", "embudo__cifra--efectiva");
+      contar(EFECTIVA, "personas a la vez · capacidad de carga efectiva", "embudo__cifra--efectiva");
     } else simular();
   });
 }

@@ -64,6 +64,38 @@ def limpiar_texto(v):
     return v[:1].upper() + v[1:].lower() if v.isupper() or re.match(r"^[A-ZÁÉÍÓÚ]{2}[a-z]", v) else v
 
 
+FORMULARIO = sorted((WEB.parent / "fuentes" / "formulario").glob("respuestas_formulario_*.csv"))
+
+
+def corregir_socorrismo(t):
+    """La columna Socorrismo del Excel no coincide con lo respondido en el formulario (solo el 67 %
+    de las 54 respuestas online; las otras cinco valoraciones coinciden al 100 %). Se toma la
+    respuesta original. Las filas online del Excel están en el mismo orden que el formulario."""
+    if not FORMULARIO:
+        return []
+    f = pd.read_csv(FORMULARIO[-1])
+    f["_fecha"] = pd.to_datetime(f["Marca temporal"], dayfirst=True)
+    frec = next(c for c in f.columns if c.startswith("¿Cuál es la frecuencia"))
+    f = f[(f[frec] != "Nunca") & (f["_fecha"] < "2026-04-22")].sort_values("_fecha").reset_index(drop=True)
+    online = t.index[t["Usuarios_totales"].isna()]
+    assert len(online) == len(f), "El formulario no cuadra con las respuestas online del Excel"
+    assert (pd.to_datetime(t.loc[online, "Dia_mes"]).dt.strftime("%Y-%m-%d").values == f["_fecha"].dt.strftime("%Y-%m-%d").values).all()
+    escala = ["Muy mejorable", "Mejorable", "Adecuado", "Bueno", "Muy bueno"]
+    col = next(c for c in f.columns if c.endswith("[Socorrismo]"))
+    nuevo = f[col].map(lambda v: escala[int(str(v).strip()[0]) - 1] if pd.notna(v) else None).values
+    antes = t.loc[online, "Socorrismo"].astype(str).str.strip().str.capitalize().values
+    cambios = int((antes != nuevo).sum())
+    t.loc[online, "Socorrismo"] = nuevo
+    return [{
+        "id": "socorrismo-formulario",
+        "donde": {"Modalidad": "Online", "columna": "Socorrismo"},
+        "cambio": {"Socorrismo": "respuesta original del formulario"},
+        "por_que": "En el Excel, la valoración del socorrismo de las respuestas online no coincide con lo que la gente marcó en el "
+                   "formulario (las otras cinco valoraciones de servicios sí coinciden al 100 %). Se usa la respuesta original.",
+        "filas": cambios,
+    }]
+
+
 def encuestas():
     t = pd.read_excel(DOCS / "DATOS_TFM.xlsx", header=0).dropna(axis=1, how="all")
     t = t.rename(columns=COLUMNAS)
@@ -96,6 +128,7 @@ def encuestas():
         for k, v in cor["cambio"].items():
             t.loc[filas, k] = v
         aplicadas.append({**cor, "filas": int(filas.sum())})
+    aplicadas += corregir_socorrismo(t)
     t["Procedencia"] = t["Procedencia"].replace(UNIFICAR)
     # La misma respuesta escrita de dos formas, y la escala de saturación con los nombres de Adrián.
     t["Que_harias_mas_usuarios"] = t["Que_harias_mas_usuarios"].replace({"Ir a otra playa cercana": "Ir a una playa cercana"})

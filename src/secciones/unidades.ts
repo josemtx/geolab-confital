@@ -34,7 +34,7 @@ const ficha = (cods: string[], cap: Capacidad[]) =>
         .map((c) =>
           c.ccf === null || c.ccr === null || c.cce === null
             ? `<p class="nota">${c.nota ?? "Sin cálculo"}</p>`
-            : `${c.uso ? `<p class="cifras-unidad__uso">${c.uso.startsWith("C.") ? `${c.uso} · ${c.unidad}` : `Uso: ${c.uso.toLowerCase()}`}</p>` : ""}${fila("Caben por espacio", c.ccf, c.ccf)}${fila("Descontando el clima", c.ccr, c.ccf)}${fila("Con los servicios actuales, a la vez", c.cce, c.ccf, "cifra-fila--efectiva")}`,
+            : `${c.uso ? `<p class="cifras-unidad__uso">${c.uso.startsWith("C.") ? `${c.uso} · ${c.unidad}` : `Uso: ${c.uso.toLowerCase()}`}</p>` : ""}${fila("Capacidad de carga física", c.ccf, c.ccf)}${fila("Capacidad de carga real", c.ccr, c.ccf)}${fila("Capacidad de carga efectiva", c.cce, c.ccf, "cifra-fila--efectiva")}`,
         )
         .join("");
       return `<div class="cifras-unidad"><span class="chip-unidad" style="--c:${COLOR[cod]}"><i></i>${cods.length > 1 ? nombre : `Unidad ${cod}`}</span>${cuerpo}</div>`;
@@ -48,9 +48,9 @@ export async function unidades() {
   const [zonas, cap] = await Promise.all([cargar<Coleccion>("geo/zonificacion.json"), cargar<Capacidad[]>("capacidad.json")]);
 
   pasosEl.innerHTML =
-    `<article class="paso"><p class="paso__fase">Zonificación</p><h3>Ocho unidades ambientales</h3><p>Cada unidad agrupa un trozo del Confital con características y usos parecidos. Vamos a recorrerlas del mar a la ladera.</p></article>` +
+    `<article class="paso"><p class="paso__fase">Zonificación</p><h3>Ocho unidades ambientales</h3><p>Cada unidad agrupa una porción del Confital con características y usos parecidos. Vamos a recorrerlas del mar a la ladera.</p></article>` +
     PASOS.map((p) => `<article class="paso"><p class="paso__fase">Unidad ${p.cods.join(" y ")}</p><h3>${p.titulo}</h3><p>${p.texto}</p>${ficha(p.cods, cap)}</article>`).join("") +
-    `<article class="paso"><p class="paso__fase">Todas juntas</p><h3>El Confital, pieza a pieza</h3><p>Ahora puedes tocar cualquier unidad del mapa para ver su ficha.</p><div data-ficha-libre><p class="nota">Toca una unidad del mapa.</p></div></article>`;
+    `<article class="paso"><p class="paso__fase">Todas juntas</p><h3>El Confital, pieza a pieza</h3><p>Ahora puedes tocar cualquier unidad del mapa para ver su ficha.</p><p><a class="boton-descarga" href="descargas/mapa_unidades_ambientales.jpg" download>↓ Descargar el mapa de unidades ambientales</a></p><div data-ficha-libre><p class="nota">Toca una unidad del mapa.</p></div></article>`;
 
   const cajas: Record<string, Caja> = {};
   zonas.features.forEach((f) => (cajas[f.properties.COD] = cajaDe(coordenadas(f.geometry))));

@@ -16,9 +16,9 @@ const UNIDADES = [
   { nombre: "Zona de surf", cod: "A1" },
 ];
 const DIAS = [
-  { fecha: "2025-12-30", texto: "Martes 30 de diciembre de 2025", tipo: "Día tranquilo" },
-  { fecha: "2026-01-03", texto: "Sábado 3 de enero de 2026", tipo: "Día de mucha gente" },
-  { fecha: "2026-03-07", texto: "Sábado 7 de marzo de 2026", tipo: "Día de mucha gente" },
+  { fecha: "2025-12-30", texto: "Martes 30 de diciembre de 2025", tipo: "Día de baja afluencia" },
+  { fecha: "2026-01-03", texto: "Sábado 3 de enero de 2026", tipo: "Día de alta afluencia" },
+  { fecha: "2026-03-07", texto: "Sábado 7 de marzo de 2026", tipo: "Día de alta afluencia" },
 ];
 const FRANJAS = ["Mañana", "Mediodía", "Tarde"];
 

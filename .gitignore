@@ -2,4 +2,7 @@ node_modules
 dist
 .DS_Store
 .env
+*.local
 __pycache__/
+# Prueba local con el CSV del formulario: no se publica
+public/prueba/

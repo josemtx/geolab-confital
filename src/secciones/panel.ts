@@ -2,12 +2,14 @@
 // variables, orden de las respuestas y simbología de color de cada gráfico.
 // Todo se calcula a partir de las respuestas, así que se actualiza solo cuando entren nuevas.
 import { anillo, apiladas, barras, degradado, fmtPct, mosaico, type Cat, type Grupo } from "../graficos";
-import { respuestas, type Respuesta } from "../respuestas";
+import { cargarDatos, CSV_EN_VIVO, type Datos, type Respuesta } from "../respuestas";
 import { percepcionUnidades } from "./percepcion-unidades";
 
 // --- Paletas con significado (documento de Adrián) ------------------------------------------
 export const SEMAFORO = ["#15803d", "#84cc16", "#facc15", "#f97316", "#dc2626"]; // de lo mejor a lo peor
+// Sí/No: el verde siempre para la respuesta buena. En «¿dejaría de venir?» o «¿le condiciona…?», lo bueno es «No».
 const SI_NO = { Sí: "#16a34a", No: "#dc2626", Depende: "#9ca3af" } as Record<string, string>;
+const NO_ES_BUENO = { No: "#16a34a", Sí: "#dc2626", Depende: "#9ca3af" } as Record<string, string>;
 const AZUL = "#0038ff";
 
 const ORDEN: Record<string, string[]> = {
@@ -95,10 +97,48 @@ function bloque(cont: Element, id: string, sobretitulo: string, titulo: string, 
   return sec;
 }
 
+// Panel con datos en vivo: por defecto «Todas» (estudio + formulario); se puede ver solo el estudio.
 export async function panel() {
-  const cont = document.querySelector("[data-panel]");
+  const cont = document.querySelector<HTMLElement>("[data-panel]");
+  const fuente = document.querySelector<HTMLElement>("[data-fuente]");
   if (!cont) return;
-  const rs = await respuestas();
+  let datos: Datos = await cargarDatos();
+  let modo: "todas" | "estudio" = "todas";
+  const total = () => datos.estudio.length + datos.nuevas.length;
+  const repintar = () => {
+    cont.innerHTML = "";
+    pintar(cont, modo === "todas" ? [...datos.estudio, ...datos.nuevas] : datos.estudio);
+  };
+  const cabecera = () => {
+    if (!fuente) return;
+    const vivo = CSV_EN_VIVO && !datos.error;
+    fuente.innerHTML = `
+      <div class="selector selector--oscuro" role="group" aria-label="Qué respuestas mostrar">
+        <button type="button" data-modo="todas" aria-pressed="${modo === "todas"}">Todas · ${total()}</button>
+        <button type="button" data-modo="estudio" aria-pressed="${modo === "estudio"}">Solo el estudio · ${datos.estudio.length}</button>
+      </div>
+      <p class="fuente-vivo">${vivo ? `<span class="punto-vivo"></span>En directo: ${datos.nuevas.length} ${datos.nuevas.length === 1 ? "respuesta nueva" : "respuestas nuevas"} desde el estudio · comprobado a las ${datos.actualizado!.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}` : "Datos del estudio (diciembre 2025 – abril 2026)"}</p>`;
+    fuente.querySelectorAll<HTMLButtonElement>("[data-modo]").forEach((b) =>
+      b.addEventListener("click", () => {
+        modo = b.dataset.modo as typeof modo;
+        cabecera();
+        repintar();
+      }),
+    );
+  };
+  cabecera();
+  repintar();
+  // La hoja de Google se vuelve a leer cada minuto; si hay respuestas nuevas, todo se recalcula.
+  if (CSV_EN_VIVO)
+    setInterval(async () => {
+      const antes = datos.nuevas.length;
+      datos = await cargarDatos();
+      cabecera();
+      if (datos.nuevas.length !== antes && modo === "todas") repintar();
+    }, 60_000);
+}
+
+function pintar(cont: HTMLElement, rs: Respuesta[]) {
   const n = (campo: string) => rs.filter((r) => r[campo] !== null && r[campo] !== undefined && r[campo] !== "").length;
 
   // Cifras clave
@@ -129,11 +169,13 @@ export async function panel() {
       titulo: "Barrios de Las Palmas de Gran Canaria", n: mismo.length, ancha: true,
       destacado: `${barrios[0].etiqueta} es, con diferencia, el barrio que más visitantes aporta (${barrios[0].n} personas). Los barrios de la Ciudad Baja concentran la mayoría, quizá por su mejor conexión en transporte público.`,
       dibujar: (el) => barras(el, barrios, { titulo: "Barrios", vertical: true, sinPct: true }),
+      extra: `<p class="descarga-mapa"><a class="boton-descarga" href="descargas/procedencia_escala_municipal.jpg" download>↓ Descargar el mapa de procedencia por barrios</a></p>`,
     },
     {
       titulo: "Otros municipios de Gran Canaria", n: otros.length,
       destacado: `${munis[0].etiqueta}, ${munis[1].etiqueta} y ${munis[2].etiqueta} son los municipios que más visitantes aportan.`,
       dibujar: (el) => barras(el, munis, { titulo: "Municipios", sinPct: true }),
+      extra: `<p class="descarga-mapa"><a class="boton-descarga" href="descargas/procedencia_escala_insular.jpg" download>↓ Descargar el mapa de procedencia por municipios</a></p>`,
     },
     {
       titulo: "Y más allá de Gran Canaria", n: rs.length - mismo.length - otros.length,
@@ -169,7 +211,7 @@ export async function panel() {
 
   // 4 · Cómo se siente
   const sat = cats(rs, "Numero_usuarios_percibido", semaforoDe("Numero_usuarios_percibido")), com = cats(rs, "Grado_comodidad", semaforoDe("Grado_comodidad"));
-  const aband = cats(rs, "Condicionante_mayor_afluencia", (k) => SI_NO[k], ["Sí", "No", "Depende"]), haria = cats(rs, "Que_harias_mas_usuarios", semaforoDe("Que_harias_mas_usuarios"));
+  const aband = cats(rs, "Condicionante_mayor_afluencia", (k) => NO_ES_BUENO[k], ["Sí", "No", "Depende"]), haria = cats(rs, "Que_harias_mas_usuarios", semaforoDe("Que_harias_mas_usuarios"));
   const s = bloque(cont, "sensacion", "Percepción", "¿Cómo se siente la gente?", "Aunque a veces se supera la capacidad, la mayoría siente que hay espacio de sobra y está cómoda.", [
     { titulo: "Espacio disponible", n: n("Superficie_disponible"), destacado: `${fmtPct(suma(sup, ["Muy amplio", "Amplio"]), total(sup))} siente que el espacio es amplio o muy amplio.`, dibujar: (el) => barras(el, sup, { titulo: "Espacio disponible" }) },
     { titulo: "Cuánta gente sentían a su alrededor", n: n("Numero_usuarios_percibido"), destacado: `Solo ${fmtPct(suma(sat, ["Alto", "Muy alto"]), total(sat))} percibía mucha o demasiada gente.`, dibujar: (el) => barras(el, sat, { titulo: "Saturación percibida" }) },
@@ -181,7 +223,7 @@ export async function panel() {
   percepcionUnidades(s.querySelector(".tarjetas")!, rs);
 
   // 5 · Qué hay que mejorar
-  const bano = cats(rs, "Cierre_bano", (k) => SI_NO[k], ["Sí", "No"]), coche = cats(rs, "Cierre_coches", (k) => SI_NO[k], ["Sí", "No"]);
+  const bano = cats(rs, "Cierre_bano", (k) => NO_ES_BUENO[k], ["Sí", "No"]), coche = cats(rs, "Cierre_coches", (k) => NO_ES_BUENO[k], ["Sí", "No"]);
   const servicios = ["Socorrismo", "Seguridad", "Senalizacion", "Accesibilidad", "Limpieza", "Iluminacion"];
   const nombreServ: Record<string, string> = { Senalizacion: "Señalización", Iluminacion: "Iluminación" };
   const valoracion = servicios
@@ -193,6 +235,6 @@ export async function panel() {
     { titulo: "¿Son suficientes, según de dónde vienen?", n: n("Servicios_suficientes"), ancha: true, destacado: "Quienes viven en Las Palmas de Gran Canaria son quienes más echan en falta servicios; los turistas, mucho menos.", dibujar: (el) => apiladas(el, cruce(rs.filter((r) => r.Servicios_suficientes), "Procedencia", "Servicios_suficientes", (k) => SI_NO[k]), { titulo: "Procedencia y servicios", leyenda: serv }) },
     { titulo: "¿Le condiciona que no se recomiende el baño?", n: n("Cierre_bano"), destacado: `A ${fmtPct(suma(bano, ["No"]), total(bano))} no le condiciona: desde 2017 el baño no se recomienda y desde 2021 hay bandera roja permanente.`, dibujar: (el) => anillo(el, bano, { titulo: "Cierre al baño", centro: bano.find((c) => c.etiqueta === "No") ?? bano[0], centroTexto: "no le condiciona" }) },
     { titulo: "¿Le condiciona el cierre al tráfico?", n: n("Cierre_coches"), destacado: `A ${fmtPct(suma(coche, ["No"]), total(coche))} no le condiciona que no se pueda entrar en coche.`, dibujar: (el) => anillo(el, coche, { titulo: "Cierre al tráfico", centro: coche.find((c) => c.etiqueta === "No") ?? coche[0], centroTexto: "no le condiciona" }) },
-    { titulo: "El cierre al baño, según la frecuencia de visita", n: n("Cierre_bano"), ancha: true, destacado: "A quien viene a diario no le condiciona; a quien viene solo unas pocas veces al año, bastante más.", dibujar: (el) => apiladas(el, cruce(rs, "Frecuencia_visita", "Cierre_bano", (k) => SI_NO[k]), { titulo: "Frecuencia y cierre al baño", leyenda: bano }) },
+    { titulo: "El cierre al baño, según la frecuencia de visita", n: n("Cierre_bano"), ancha: true, destacado: "A quien viene a diario no le condiciona; a quien viene solo unas pocas veces al año, bastante más.", dibujar: (el) => apiladas(el, cruce(rs, "Frecuencia_visita", "Cierre_bano", (k) => NO_ES_BUENO[k]), { titulo: "Frecuencia y cierre al baño", leyenda: bano }) },
   ]);
 }
