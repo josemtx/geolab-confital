@@ -1,5 +1,6 @@
 import "./estilos.css";
 import { partirPalabras, revelar } from "./comun";
+import { conflictos } from "./secciones/conflictos";
 import { conteos } from "./secciones/conteos";
 import { embudo } from "./secciones/embudo";
 import { iniciarDestacados } from "./secciones/paginas-datos";
@@ -33,3 +34,4 @@ embudo();
 unidades();
 conteos();
 iniciarDestacados(procedencia());
+conflictos();

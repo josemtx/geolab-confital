@@ -521,6 +521,200 @@ p {
     border-radius: 0;
   }
 }
+/* --- Mapa de conflictos --- */
+.conflictos {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: 20px;
+  margin-top: 40px;
+  align-items: start;
+}
+.conflictos__mapa {
+  position: relative;
+  border-radius: var(--radio);
+  overflow: hidden;
+  background: var(--noche);
+}
+.mapa-conflictos {
+  height: min(72svh, 680px);
+}
+.conflictos__panel {
+  background: var(--fondo-2);
+  border-radius: var(--radio);
+  padding: 22px 22px 18px;
+  max-height: min(72svh, 680px);
+  overflow-y: auto;
+}
+.conflictos__ayuda {
+  color: var(--gris);
+  font-size: 0.95rem;
+  margin-bottom: 8px;
+}
+.conflictos__grupo {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--azul);
+  margin: 18px 0 6px;
+}
+.conflictos__lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.conflictos__lista button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 7px 8px;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  font: inherit;
+  font-size: 0.95rem;
+  text-align: left;
+  color: var(--tinta);
+  cursor: pointer;
+}
+.conflictos__lista button:hover,
+.conflictos__lista button:focus-visible {
+  background: #fff;
+}
+.conflictos__volver {
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 650;
+  color: var(--azul);
+  cursor: pointer;
+  margin-bottom: 14px;
+}
+.conflictos__tipo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--gris);
+  margin-bottom: 8px;
+}
+.conflictos__titulo {
+  font-size: 1.3rem;
+  font-weight: 750;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+  margin-bottom: 4px;
+}
+.conflictos__oficial {
+  font-size: 0.85rem;
+  font-style: italic;
+  margin-bottom: 10px;
+}
+.conflictos__panel > p {
+  color: var(--gris);
+  font-size: 0.98rem;
+}
+.conflictos__panel h4 {
+  font-size: 0.95rem;
+  margin: 18px 0 8px;
+}
+.conflictos__foto {
+  margin: 14px 0 0;
+}
+.conflictos__foto img {
+  width: 100%;
+  border-radius: 12px;
+  display: block;
+}
+.conflictos__foto figcaption {
+  font-size: 0.75rem;
+  color: var(--gris);
+  margin-top: 4px;
+}
+.conflictos__cita {
+  margin: 0 0 10px;
+  padding: 12px 14px;
+  background: #fff;
+  border-left: 4px solid var(--azul);
+  border-radius: 0 10px 10px 0;
+}
+.conflictos__cita p {
+  margin: 0;
+  font-weight: 550;
+}
+.conflictos__cita footer {
+  font-size: 0.8rem;
+  color: var(--gris);
+  margin-top: 4px;
+}
+.mapa-descarga-conflictos {
+  display: block;
+  margin-top: 20px;
+  text-decoration: none;
+  color: var(--azul);
+  font-weight: 650;
+  font-size: 0.92rem;
+}
+.mapa-descarga-conflictos img {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  border: 1px solid var(--linea);
+  margin-bottom: 6px;
+}
+.pin {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--c);
+  color: var(--t);
+  font: 750 0.85rem/1 inherit;
+  font-family: inherit;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.45);
+}
+.pin--mini {
+  width: 24px;
+  height: 24px;
+  font-size: 0.75rem;
+}
+.pin--mapa {
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.25s var(--muelle), opacity 0.25s;
+}
+.pin--mapa:hover,
+.pin--mapa:focus-visible {
+  transform: scale(1.15);
+}
+.pin--activo {
+  transform: scale(1.35);
+  outline: 3px solid rgb(255 255 255 / 0.6);
+  outline-offset: 2px;
+}
+.pin--atenuado {
+  opacity: 0.4;
+}
+@media (max-width: 860px) {
+  .conflictos {
+    grid-template-columns: 1fr;
+  }
+  .mapa-conflictos {
+    height: 60svh;
+  }
+  .conflictos__panel {
+    max-height: none;
+  }
+}
+
 /* Mapa de procedencia: plano (sin «cielo») y con rótulos HTML sobre la ortofoto */
 .mapa-flujos::after {
   display: none;

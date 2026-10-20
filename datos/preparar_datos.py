@@ -194,6 +194,18 @@ CAPAS_GEO = [  # nombre, ruta, EPSG, campos, tolerancia de simplificación (m)
     ("conflicto_lineas", "Zonas de conflicto/Lineas.shp", "EPSG:3857", {"Descripci", "opiniones", "opiniones2"}, 1),
 ]
 
+# Erratas de las capas de conflicto (los textos se publican tal cual en el mapa).
+ERRATAS = {"resíduos": "residuos", "pervivien": "perviven", "uso..": "uso.", "  ": " "}
+
+
+def corregir_texto(v):
+    if not isinstance(v, str):
+        return v
+    for mal, bien in ERRATAS.items():
+        v = v.replace(mal, bien)
+    return v.strip()
+
+
 DISOLVER = {"barrios": 10, "ciudad_baja": 10, "municipios": 40}  # m que se cierran entre parcelas
 
 
@@ -212,7 +224,7 @@ def geo():
                 g = g.simplify(tol, preserve_topology=True)
             if epsg != "EPSG:4326":
                 g = transformar(g, lambda xy: list(zip(*A_WGS[epsg].transform(xy[:, 0], xy[:, 1]))))
-            props = {k: v for k, v in zip(nombres, sr.record) if k in campos}
+            props = {k: corregir_texto(v) for k, v in zip(nombres, sr.record) if k in campos}
             feats.append({"type": "Feature", "properties": props, "geometry": json.loads(json.dumps(mapping(g)), parse_float=lambda f: round(float(f), 6))})
         guardar(f"geo/{nombre}.json", {"type": "FeatureCollection", "features": feats})
 
