@@ -8,7 +8,8 @@ import { conDatos, definir, dibujarBloque, dibujarKpis, dibujarTarjetas, type Pa
 
 const DESTACADOS = ["percepcion-unidades", "que-es-lo-que-mas-valoran", "como-valoran-cada-servicio"];
 
-export function iniciarDestacados() {
+// `tambien` recibe las mismas respuestas (el mapa de procedencia), sin volver a pedirlas.
+export function iniciarDestacados(tambien: (rs: Respuesta[]) => void = () => {}) {
   const cont = document.querySelector("[data-destacados]");
   if (!cont) return;
   conDatos((rs) => {
@@ -17,6 +18,7 @@ export function iniciarDestacados() {
     cont.innerHTML = "";
     const todas = p.bloques.flatMap((b) => b.tarjetas);
     dibujarTarjetas(cont, DESTACADOS.map((id) => todas.find((t) => t.id === id)!).filter(Boolean));
+    tambien(rs);
   });
 }
 

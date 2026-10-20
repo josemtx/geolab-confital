@@ -4,6 +4,7 @@ import { conteos } from "./secciones/conteos";
 import { embudo } from "./secciones/embudo";
 import { iniciarDestacados } from "./secciones/paginas-datos";
 import { portada } from "./secciones/portada";
+import { procedencia } from "./secciones/procedencia";
 import { unidades } from "./secciones/unidades";
 
 partirPalabras();
@@ -31,4 +32,4 @@ portada();
 embudo();
 unidades();
 conteos();
-iniciarDestacados();
+iniciarDestacados(procedencia());

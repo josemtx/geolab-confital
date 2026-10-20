@@ -194,6 +194,8 @@ CAPAS_GEO = [  # nombre, ruta, EPSG, campos, tolerancia de simplificación (m)
     ("conflicto_lineas", "Zonas de conflicto/Lineas.shp", "EPSG:3857", {"Descripci", "opiniones", "opiniones2"}, 1),
 ]
 
+DISOLVER = {"barrios": 10, "ciudad_baja": 10, "municipios": 40}  # m que se cierran entre parcelas
+
 
 def geo():
     out = SALIDA / "geo"
@@ -204,6 +206,8 @@ def geo():
         feats = []
         for sr in r.shapeRecords():
             g = shape(sr.shape.__geo_interface__)
+            if nombre in DISOLVER:  # parcelas del catastro → una sola forma por barrio o municipio
+                g = g.buffer(DISOLVER[nombre]).buffer(-DISOLVER[nombre])
             if tol:
                 g = g.simplify(tol, preserve_topology=True)
             if epsg != "EPSG:4326":

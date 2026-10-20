@@ -521,6 +521,29 @@ p {
     border-radius: 0;
   }
 }
+/* Mapa de procedencia: plano (sin «cielo») y con rótulos HTML sobre la ortofoto */
+.mapa-flujos::after {
+  display: none;
+}
+.mapa-etiqueta {
+  font-size: 0.85rem;
+  font-weight: 650;
+  color: #fff;
+  max-width: 11em;
+  line-height: 1.2;
+  text-shadow: 0 1px 3px rgb(0 0 0 / 0.9), 0 0 8px rgb(0 0 0 / 0.6);
+  pointer-events: none;
+}
+.mapa-etiqueta--destino {
+  font-size: 1rem;
+  font-weight: 750;
+}
+.mapa-etiqueta--zona {
+  font-size: 1.1rem;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
 .cifras-unidad {
   display: grid;
   gap: 10px;
