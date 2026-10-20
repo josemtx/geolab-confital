@@ -34,7 +34,12 @@ const barra = (rs: Respuesta[], campo: string, escala: string[]) => {
   return `<div class="escala">${tramos}</div>`;
 };
 
-export async function percepcionUnidades(rejilla: Element, rs: Respuesta[]) {
+export async function percepcionUnidades(rejilla: Element, rs: Respuesta[], o: { informe?: boolean; unidad?: number } = {}) {
+  // En el informe no hay botones: se imprime una tarjeta por unidad.
+  if (o.informe && o.unidad === undefined) {
+    for (let i = 0; i < UNIDADES.length; i++) await percepcionUnidades(rejilla, rs, { ...o, unidad: i });
+    return;
+  }
   const zonas = await cargar<{ features: Zona[] }>("geo/zonificacion.json");
   // d3-geo necesita los anillos en sentido horario: si uno «ocupa» más de medio globo, se invierte.
   zonas.features.forEach((f) => {
@@ -50,9 +55,9 @@ export async function percepcionUnidades(rejilla: Element, rs: Respuesta[]) {
   const art = document.createElement("article");
   art.className = "tarjeta tarjeta--ancha percepcion";
   art.innerHTML = `
-    <h4>Saturación y comodidad, unidad por unidad</h4>
+    <h4>Saturación y comodidad, unidad por unidad${o.informe ? ` · ${UNIDADES[o.unidad ?? 0].nombre}` : ""}</h4>
     <p class="tarjeta__n">Encuestas presenciales en tres días de 2025 y 2026</p>
-    <p class="tarjeta__destacado">Elige una unidad en el mapa. Para cada momento verás cuánta gente se contó en el Confital y cómo la percibían quienes estaban en esa unidad.</p>
+    <p class="tarjeta__destacado">${o.informe ? "Para cada momento, cuánta gente se contó en el Confital y cómo percibían la saturación y la comodidad quienes estaban en esta unidad." : "Elige una unidad en el mapa. Para cada momento verás cuánta gente se contó en el Confital y cómo la percibían quienes estaban en esa unidad."}</p>
     <div class="percepcion__cuerpo">
       <div class="percepcion__mapa"><svg viewBox="0 0 400 440" role="img" aria-label="Mapa de las unidades ambientales"></svg>
         <div class="chips" role="group" aria-label="Unidad ambiental">${UNIDADES.map((u, i) => `<button type="button" data-u="${i}" aria-pressed="${i === 0}">${u.nombre}</button>`).join("")}</div>
@@ -60,7 +65,7 @@ export async function percepcionUnidades(rejilla: Element, rs: Respuesta[]) {
       <div class="percepcion__datos"></div>
     </div>
     <ul class="leyenda leyenda--fija">${SAT.map((s, i) => `<li><span class="muestra" style="--c:${SEMAFORO[i]}"></span>${s} / ${COM[i].toLowerCase()}</li>`).join("")}</ul>`;
-  rejilla.prepend(art);
+  rejilla.append(art);
   requestAnimationFrame(() => art.classList.add("visible"));
 
   const svg = art.querySelector("svg")!;
@@ -93,6 +98,12 @@ export async function percepcionUnidades(rejilla: Element, rs: Respuesta[]) {
       const g = marzo.filter((r) => r.Franja_horaria === f);
       return `<div class="celda"><p class="celda__franja">${f} · ${afluencia("2026-03-07", f)} personas</p><p class="celda__etq">Cuánta gente sentían</p>${barra(g, "Numero_usuarios_percibido", SAT)}<p class="celda__etq">Cómo de cómodos estaban</p>${barra(g.filter((r) => r.Grado_comodidad), "Grado_comodidad", COM)}</div>`;
     }).join("");
+    // En el informe, la comparación del 7 de marzo se reduce a una fila con la comodidad (la saturación ya está arriba).
+    if (o.informe) {
+      const comodidad = FRANJAS.map((f) => `<div class="celda"><p class="celda__franja">${f}</p>${barra(marzo.filter((r) => r.Franja_horaria === f && r.Grado_comodidad), "Grado_comodidad", COM)}</div>`).join("");
+      datos.innerHTML = `<h5>Cuánta gente sentían a su alrededor</h5>${tabla}<div class="dia"><p class="dia__titulo">Sábado 7 de marzo de 2026 <span>Cómo de cómodos estaban</span></p><div class="dia__celdas">${comodidad}</div></div>`;
+      return;
+    }
     datos.innerHTML = `<h5>Cuánta gente sentían a su alrededor · ${u.nombre}</h5>${tabla}
       <h5>7 de marzo: ¿más gente, menos comodidad?</h5><p class="nota">El mismo día, quienes estaban en la ${u.nombre.toLowerCase()} respondieron a las dos preguntas. Así se ve si la comodidad cambia con la saturación.</p><div class="dia__celdas">${comparar}</div>`;
   };
@@ -100,5 +111,6 @@ export async function percepcionUnidades(rejilla: Element, rs: Respuesta[]) {
     const t = (e.target as Element).closest("[data-u]");
     if (t) pintar(Number(t.getAttribute("data-u")));
   });
-  pintar(0);
+  if (o.informe) art.querySelector(".chips")?.remove();
+  pintar(o.unidad ?? 0);
 }

@@ -11,7 +11,9 @@ export type Datos = { estudio: Respuesta[]; nuevas: Respuesta[]; actualizado: Da
 
 // Dirección del CSV publicado de la pestaña «publica» de la hoja de Google.
 // Se puede cambiar sin tocar el código con la variable VITE_CSV_EN_VIVO (archivo .env.local).
-export const CSV_EN_VIVO: string | null = import.meta.env.VITE_CSV_EN_VIVO || null;
+export const CSV_EN_VIVO: string | null =
+  import.meta.env.VITE_CSV_EN_VIVO ||
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vR7wDRl1HU8sZn5o51-lGV7k9DwLJ5bERg7kRwscNOkK8kF1SvYooJywxDIFeF0wPWJSi3Q3QW2N378/pub?gid=590702540&single=true&output=csv";
 const CIERRE_ESTUDIO = Date.parse("2026-04-22T00:00:00"); // última respuesta online del TFM: 21/04/2026
 
 let estudio: Respuesta[] | null = null;

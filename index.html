@@ -23,6 +23,7 @@
         <a href="#historia">La historia</a>
         <a href="#capacidad">Primera investigación</a>
         <a href="#percepcion">Segunda investigación</a>
+        <a href="datos/">Panel de datos</a>
       </nav>
       <a class="boton boton--primario boton--pequeno" href="https://docs.google.com/forms/d/e/1FAIpQLSfyf9AMTgBBAjTzXgUKpIaVECFgdi9mQxHNSyQvvqvl4tdrtA/viewform" target="_blank" rel="noopener">Participa</a>
     </header>
@@ -248,13 +249,24 @@
           <div class="fuente-datos" data-fuente></div>
           <div class="kpis" data-kpis></div>
           <nav class="indice-panel" aria-label="Apartados de los resultados">
-            <a href="#quien">Quién viene</a><a href="#motivos">Por qué viene</a><a href="#habitos">Cómo usa el espacio</a><a href="#sensacion">Cómo se siente</a><a href="#gestion">Qué mejorar</a>
+            <a href="datos/#quien">Quién viene</a><a href="datos/#motivos">Por qué viene</a><a href="datos/#habitos">Cómo usa el espacio</a><a href="datos/#sensacion">Cómo se siente</a><a href="datos/#gestion">Qué mejorar</a><a href="datos/#informe">↓ Crear informe</a>
           </nav>
         </div>
       </section>
 
-      <!-- 4 · Panel de resultados (se dibuja con las respuestas) -->
-      <section class="panel" data-panel aria-label="Resultados de la encuesta"></section>
+      <!-- 4 · Lo más destacado de la encuesta (el resto, en el panel de datos) -->
+      <section class="seccion" aria-labelledby="titulo-destacados">
+        <div class="contenedor">
+          <p class="sobretitulo">Lo más destacado</p>
+          <h2 class="titular" id="titulo-destacados" data-revelar>Lleno no significa incómodo.</h2>
+          <p class="entradilla" data-revelar>Aunque algunos días se supera la capacidad, la mayoría siente que hay espacio de sobra y está cómoda. Lo que más se valora es la tranquilidad, y lo que más se echa en falta, los servicios.</p>
+          <div class="tarjetas" data-destacados></div>
+          <div class="centrado mas-datos">
+            <a class="boton boton--primario" href="datos/">Ver el panel de datos completo</a>
+            <a class="boton-descarga" href="datos/#informe">↓ Crear un informe en PDF</a>
+          </div>
+        </div>
+      </section>
 
       <section class="seccion seccion--gris centrado">
         <div class="contenedor contenedor--estrecho">

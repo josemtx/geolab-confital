@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Panel de datos · GeoLab Confital</title>
+    <meta name="description" content="Todos los resultados de la encuesta de percepción del Confital, actualizados con cada nueva respuesta, y un creador de informes en PDF." />
+    <meta property="og:title" content="Panel de datos · GeoLab Confital" />
+    <meta property="og:image" content="../img/logo-512.png" />
+    <meta name="theme-color" content="#0038FF" />
+    <link rel="icon" href="../img/favicon.png" />
+  </head>
+  <body class="pagina-datos">
+    <a class="saltar" href="#contenido">Saltar al contenido</a>
+
+    <header class="nav nav--solida">
+      <a class="nav__marca" href="../" aria-label="GeoLab Confital, inicio">
+        <img src="../img/logo-128.webp" alt="" width="40" height="36" />
+        <span>GeoLab <strong>Confital</strong></span>
+      </a>
+      <nav class="nav__enlaces" aria-label="Secciones">
+        <a href="../#historia">La historia</a>
+        <a href="../#capacidad">Primera investigación</a>
+        <a href="../#percepcion">Segunda investigación</a>
+        <a href="./" aria-current="page">Panel de datos</a>
+      </nav>
+      <a class="boton boton--primario boton--pequeno" href="https://docs.google.com/forms/d/e/1FAIpQLSfyf9AMTgBBAjTzXgUKpIaVECFgdi9mQxHNSyQvvqvl4tdrtA/viewform" target="_blank" rel="noopener">Participa</a>
+    </header>
+
+    <main id="contenido">
+      <section class="cabecera-datos">
+        <div class="contenedor">
+          <p class="sobretitulo sobretitulo--claro">Segunda investigación · Análisis de la capacidad de carga perceptual</p>
+          <h1 class="titular titular--capitulo">Panel de datos</h1>
+          <p class="entradilla entradilla--clara">Todo lo que han contado quienes visitan el Confital. Se actualiza solo con cada nueva respuesta a la encuesta.</p>
+          <div class="fuente-datos" data-fuente></div>
+          <div class="kpis" data-kpis></div>
+        </div>
+      </section>
+
+      <div class="pestanas" data-pestanas role="tablist" aria-label="Apartados del panel">
+        <div class="pestanas__fila">
+          <button type="button" role="tab" data-pestana="quien" aria-selected="true">Quién viene</button>
+          <button type="button" role="tab" data-pestana="motivos" aria-selected="false">Por qué viene</button>
+          <button type="button" role="tab" data-pestana="habitos" aria-selected="false">Cómo usa el espacio</button>
+          <button type="button" role="tab" data-pestana="sensacion" aria-selected="false">Cómo se siente</button>
+          <button type="button" role="tab" data-pestana="gestion" aria-selected="false">Qué mejorar</button>
+          <button type="button" role="tab" data-pestana="informe" aria-selected="false" class="pestana--informe">↓ Crear informe</button>
+        </div>
+      </div>
+
+      <section class="vista-datos" data-vista aria-live="polite"></section>
+    </main>
+
+    <footer class="pie">
+      <div class="contenedor pie__rejilla">
+        <div>
+          <img src="../img/logo-128.webp" alt="Logotipo de GeoLab Confital" width="64" height="58" />
+          <p><strong>GeoLab Confital</strong><br />Plataforma de divulgación científica y participación ciudadana.</p>
+        </div>
+        <div>
+          <h4>Equipo</h4>
+          <p>Adrián Cabrera Sánchez (investigación)<br />José Mataix Pérez<br />Eric Joel Castaño Santana</p>
+        </div>
+        <div>
+          <h4>Datos y licencias</h4>
+          <p>Encuestas y conteos de campo, 2024–2026.<br />Ortofoto: GRAFCAN – Gobierno de Canarias (CC BY 4.0).<br />Tipografía Inter (SIL OFL).</p>
+        </div>
+      </div>
+    </footer>
+
+    <script type="module" src="/src/datos.ts"></script>
+  </body>
+</html>
