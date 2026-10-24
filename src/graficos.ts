@@ -26,6 +26,9 @@ export const degradado = (k: number, n: number, desde = "#0026b3", hasta = "#c7d
   return `#${c.map((v) => v.toString(16).padStart(2, "0")).join("")}`;
 };
 
+// En el informe en PDF (tipo dashboard) los gráficos se dibujan más compactos.
+const compacto = (el: HTMLElement) => !!el.closest("#informe");
+
 // Redibuja al cambiar el ancho.
 function responsivo(el: HTMLElement, dibujar: (w: number) => void) {
   let ancho = 0;
@@ -95,7 +98,7 @@ export function barras(el: HTMLElement, cats: Cat[], o: { titulo: string; vertic
     const max = Math.max(...cats.map((c) => c.n), 1);
     const valor = (c: Cat) => (o.sinPct ? `${c.n}` : `${fmtPct(c.n, T)}`);
     if (o.vertical && w >= 640) {
-      const H = 300, m = { t: 26, b: 92, l: 8, r: 8 };
+      const H = compacto(el) ? 230 : 300, m = { t: 26, b: 92, l: 8, r: 8 };
       const x = scaleBand(cats.map((c) => c.etiqueta), [m.l, w - m.r]).padding(0.22);
       const y = scaleLinear([0, max], [H - m.b, m.t]);
       const cuerpo = cats
@@ -109,15 +112,15 @@ export function barras(el: HTMLElement, cats: Cat[], o: { titulo: string; vertic
         .join("");
       return lienzo(el, w, H, cuerpo, o.titulo);
     }
-    const fila = 34, etq = Math.min(210, w * 0.42), valW = 56;
+    const comp = compacto(el), fila = comp ? 23 : 34, letra = comp ? 12 : 14, etq = Math.min(210, w * 0.42), valW = 56;
     const x = scaleLinear([0, max], [0, w - etq - valW - 12]);
     const cuerpo = cats
       .map((c, i) => {
         const y = i * fila;
         return `<g data-info="${esc(c.etiqueta)}: ${c.n} respuestas (${fmtPct(c.n, T)})">
-          <text x="${etq - 10}" y="${y + 21}" text-anchor="end" font-size="14" fill="var(--tinta)">${cabe(c.icono ? `${c.icono} ${c.etiqueta}` : c.etiqueta, etq - 14)}</text>
-          <rect x="${etq}" y="${y + 7}" width="${Math.max(2, x(c.n))}" height="${fila - 14}" rx="5" fill="${c.color}"/>
-          <text x="${etq + Math.max(2, x(c.n)) + 8}" y="${y + 21}" font-size="14" font-weight="650" fill="var(--tinta)">${valor(c)}</text></g>`;
+          <text x="${etq - 10}" y="${y + fila / 2 + 4}" text-anchor="end" font-size="${letra}" fill="var(--tinta)">${cabe(c.icono ? `${c.icono} ${c.etiqueta}` : c.etiqueta, etq - 14)}</text>
+          <rect x="${etq}" y="${y + fila * 0.2}" width="${Math.max(2, x(c.n))}" height="${fila * 0.6}" rx="4" fill="${c.color}"/>
+          <text x="${etq + Math.max(2, x(c.n)) + 8}" y="${y + fila / 2 + 4}" font-size="${letra}" font-weight="650" fill="var(--tinta)">${valor(c)}</text></g>`;
       })
       .join("");
     lienzo(el, w, cats.length * fila, cuerpo, o.titulo);
@@ -128,7 +131,7 @@ export function barras(el: HTMLElement, cats: Cat[], o: { titulo: string; vertic
 export function anillo(el: HTMLElement, cats: Cat[], o: { titulo: string; centro: Cat; centroTexto?: string }) {
   const T = total(cats);
   responsivo(el, (w) => {
-    const r = Math.min(110, w / 4.2), cx = r + 6, H = 2 * r + 12;
+    const r = Math.min(compacto(el) ? 66 : 110, w / 4.2), cx = r + 6, H = 2 * r + 12;
     const arcos = pie<Cat>().value((c) => c.n).sort(null).padAngle(0.012)(cats);
     const a = arc<(typeof arcos)[number]>().innerRadius(r * 0.64).outerRadius(r).cornerRadius(3);
     const sectores = arcos.map((s) => `<path d="${a(s)}" fill="${s.data.color}" transform="translate(${cx},${r + 6})" data-info="${esc(s.data.etiqueta)}: ${s.data.n} (${fmtPct(s.data.n, T)})"/>`).join("");
@@ -150,7 +153,7 @@ export function apiladas(el: HTMLElement, grupos: Grupo[], o: { titulo: string; 
     const etiquetaSeg = (c: Cat, t: number, tam: number) => (pct(c.n, t) >= 9 && tam > 24 ? `${Math.round(pct(c.n, t))} %` : "");
     let cuerpo = "", H = 0;
     if (horizontal) {
-      const fila = 46, etq = Math.min(190, w * 0.36);
+      const fila = compacto(el) ? 34 : 46, etq = Math.min(190, w * 0.36);
       const x = scaleLinear([0, 100], [etq, w - 4]);
       cuerpo = grupos
         .map((g, i) => {
@@ -171,7 +174,7 @@ export function apiladas(el: HTMLElement, grupos: Grupo[], o: { titulo: string; 
         .join("");
       H = grupos.length * fila;
     } else {
-      H = 356;
+      H = compacto(el) ? 250 : 356;
       const m = { t: 8, b: 72, l: 8, r: 8 };
       const x = scaleBand(grupos.map((g) => g.grupo), [m.l, w - m.r]).padding(0.25);
       const y = scaleLinear([0, 100], [H - m.b, m.t]);
@@ -211,7 +214,7 @@ export function leyendaDe(el: HTMLElement, cats: Cat[]) {
 export function mosaico(el: HTMLElement, cats: Cat[], o: { titulo: string }) {
   const T = total(cats);
   responsivo(el, (w) => {
-    const H = w < 640 ? 420 : 380;
+    const H = compacto(el) ? 250 : w < 640 ? 420 : 380;
     const raiz = hierarchy<{ hijos?: Cat[] } & Partial<Cat>>({ hijos: cats }, (d) => d.hijos).sum((d) => d.n ?? 0);
     const hojas = treemap<{ hijos?: Cat[] } & Partial<Cat>>().size([w, H]).paddingInner(3).tile(treemapSquarify.ratio(1.2))(raiz).leaves();
     const cuerpo = hojas

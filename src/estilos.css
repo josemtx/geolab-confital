@@ -1605,36 +1605,95 @@ p {
   color: var(--tinta);
   background: #fff;
 }
+/* Informe tipo dashboard: dos columnas de tarjetas compactas y los bloques seguidos */
 #informe .tarjetas {
-  grid-template-columns: 1fr;
-  gap: 14px;
-  margin-top: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 10px;
 }
 #informe .tarjeta {
   opacity: 1;
   transform: none;
   box-shadow: none;
   break-inside: avoid;
-  padding: 18px 20px;
+  padding: 12px 14px 10px;
+  border-radius: 12px;
 }
+#informe .tarjeta h4 {
+  font-size: 0.98rem;
+  margin-bottom: 1px;
+}
+#informe .tarjeta__n {
+  font-size: 0.68rem;
+  margin-bottom: 4px;
+}
+#informe .tarjeta__destacado {
+  font-size: 0.78rem;
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+#informe .leyenda {
+  font-size: 0.7rem;
+  gap: 4px 12px;
+  margin-top: 8px;
+}
+#informe .muestra {
+  width: 14px;
+  height: 8px;
+}
+/* Percepción por unidades: sin mapa y con celdas pequeñas, para que quepan dos por página */
 #informe .percepcion__cuerpo {
-  grid-template-columns: 130px 1fr;
-  gap: 16px;
+  grid-template-columns: 1fr;
+}
+#informe .percepcion__mapa {
+  display: none;
+}
+#informe .percepcion h5 {
+  display: none;
 }
 #informe .percepcion .dia {
-  margin-bottom: 10px;
+  margin-bottom: 6px;
+}
+#informe .percepcion .dia__titulo {
+  font-size: 0.72rem;
+  margin-bottom: 3px;
+}
+#informe .percepcion .dia__celdas {
+  gap: 6px;
 }
 #informe .percepcion .celda {
-  padding: 8px 10px;
+  padding: 4px 8px 2px;
+  border-radius: 8px;
+}
+#informe .percepcion .celda p {
+  font-size: 0.66rem;
+  margin-bottom: 2px;
+}
+#informe .percepcion .escala {
+  height: 16px;
+  margin-bottom: 3px;
+}
+#informe .percepcion .escala span {
+  font-size: 0.62rem;
 }
 #informe h2 {
-  font-size: 1.9rem;
-  letter-spacing: -0.03em;
-  margin: 0 0 6px;
+  font-size: 1.35rem;
+  letter-spacing: -0.02em;
+  margin: 0 0 2px;
 }
-.informe-pagina,
-.informe-bloque {
+#informe .sobretitulo {
+  font-size: 0.68rem;
+  margin-bottom: 2px;
+}
+.informe-pagina {
   break-after: page;
+}
+.informe-bloque {
+  margin-top: 18px;
+}
+.informe-bloque > h2,
+.informe-bloque > .sobretitulo {
+  break-after: avoid;
 }
 .informe-portada {
   min-height: 250mm;

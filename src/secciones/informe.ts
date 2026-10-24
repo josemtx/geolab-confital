@@ -6,7 +6,7 @@ import { BASE, cargar } from "../comun";
 import type { Datos, Respuesta } from "../respuestas";
 import { dibujarTarjetas, type Panel } from "./panel";
 
-const RECOMENDADOS = ["de-donde-vienen", "barrios-de-las-palmas-de-gran-canaria", "como-llegan", "espacio-disponible", "como-de-comodos-estaban", "percepcion-unidades", "son-suficientes-los-servicios", "como-valoran-cada-servicio"];
+const RECOMENDADOS = ["de-donde-vienen", "barrios-de-las-palmas-de-gran-canaria", "como-llegan", "espacio-disponible", "como-de-comodos-estaban", "percepcion-unidades", "son-suficientes-los-servicios", "como-valoran-cada-servicio", "como-veian-la-playa-segun-el-tipo-de-dia", "comodidad-segun-la-hora", "cabe-mas-gente-en-el-confital"];
 const PARTICIPANTES = ["Adrián Cabrera Sánchez", "José Mataix Pérez", "Eric Joel Castaño Santana"];
 const INSTITUCIONES = ["Universidad de Las Palmas de Gran Canaria", "Unidad Técnica de Ciudad de Mar", "Ayuntamiento de Las Palmas de Gran Canaria"];
 const GUARDADO = "geolab-informe-seleccion";

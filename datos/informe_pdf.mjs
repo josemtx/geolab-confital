@@ -17,7 +17,9 @@ await pagina.goto(`${url}?informe=completo&mes=${mes}`, { waitUntil: "networkidl
 await pagina.waitForFunction(() => document.documentElement.dataset.informe === "listo", { timeout: 120_000 });
 const respuestas = await pagina.evaluate(() => Number(document.querySelector(".informe-portada__datos dd:nth-of-type(1)")?.textContent) || Number(document.querySelectorAll(".informe-portada__datos dd")[1]?.textContent?.match(/\d+/)?.[0]));
 mkdirSync("public/informes", { recursive: true });
-await pagina.pdf({ path: `public/informes/${mes}.pdf`, format: "A4", printBackground: true, preferCSSPageSize: true });
+// Pie con el número de página (cabe en el margen inferior de @page)
+const pie = `<div style="width:100%;font:8px Inter,system-ui,sans-serif;color:#6b7280;padding:0 14mm;display:flex;justify-content:space-between"><span>GeoLab Confital · Informe de percepción · ${mes}</span><span><span class="pageNumber"></span> / <span class="totalPages"></span></span></div>`;
+await pagina.pdf({ path: `public/informes/${mes}.pdf`, format: "A4", printBackground: true, preferCSSPageSize: true, displayHeaderFooter: true, headerTemplate: "<span></span>", footerTemplate: pie });
 await navegador.close();
 if (errores.length) throw new Error(`Errores en la página: ${errores.join(" | ")}`);
 

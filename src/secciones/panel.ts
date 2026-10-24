@@ -2,7 +2,7 @@
 // variables, orden de las respuestas y simbología de color de cada gráfico.
 // Todo se calcula a partir de las respuestas, así que se actualiza solo cuando entren nuevas.
 import { BASE } from "../comun";
-import { anillo, apiladas, barras, degradado, fmtPct, mosaico, type Cat, type Grupo } from "../graficos";
+import { anillo, apiladas, barras, degradado, fmtPct, leyendaDe, mosaico, pct, type Cat, type Grupo } from "../graficos";
 import { cargarDatos, CSV_EN_VIVO, type Datos, type Respuesta } from "../respuestas";
 import { percepcionUnidades } from "./percepcion-unidades";
 
@@ -78,6 +78,19 @@ const suma = (cs: Cat[], etiquetas: string[]) => cs.filter((c) => etiquetas.incl
 const cruce = (rs: Respuesta[], campoGrupo: string, campo: string, color: (k: string) => string): Grupo[] =>
   enOrden(recuento(rs, campoGrupo), ORDEN[campoGrupo]).map((g) => ({ grupo: NOMBRE[g] ?? g, cats: cats(rs.filter((r) => r[campoGrupo] === g), campo, color) }));
 
+// Porcentaje de unas respuestas dentro de un grupo de un cruce (para los textos de los cruces).
+const enGrupo = (gs: Grupo[], grupo: string, etiquetas: string[]) => {
+  const g = gs.find((x) => x.grupo === grupo);
+  return g ? fmtPct(suma(g.cats, etiquetas), total(g.cats)) : "–";
+};
+// El grupo donde más pesan unas respuestas (con un mínimo de respuestas para no fiarse de 2 o 3).
+const dondeMas = (gs: Grupo[], etiquetas: string[], minimo = 10) =>
+  gs.filter((g) => total(g.cats) >= minimo).reduce((a, g) => (pct(suma(g.cats, etiquetas), total(g.cats)) > pct(suma(a.cats, etiquetas), total(a.cats)) ? g : a));
+// «Área de reposo» → «el área de reposo» (para los textos).
+const ARTICULO: Record<string, string> = { "Área de reposo": "el", "Talud coluvial": "el", "Depósitos sedimentarios costeros": "los" };
+const conArticulo = (u: string) => `${ARTICULO[u] ?? "la"} ${u.charAt(0).toLowerCase()}${u.slice(1)}`;
+const conMinimo = (gs: Grupo[], minimo = 5) => gs.filter((g) => total(g.cats) >= minimo);
+
 // --- Tarjetas y bloques ------------------------------------------------------------------------
 // Se calculan una vez (definir) y cada página dibuja los que necesita: la portada, unos pocos
 // destacados; el panel de datos, un bloque por pestaña; el informe, los que elija quien lo pida.
@@ -89,6 +102,8 @@ export type Tarjeta = {
   ancha?: boolean;
   dibujar: (el: HTMLElement) => void;
   extra?: string;
+  // Dibujo alternativo para el informe en PDF (donde no sirven las descargas ni los botones)
+  informe?: (el: HTMLElement) => void;
   // Tarjetas con su propia estructura (percepción por unidades)
   especial?: (rejilla: Element, opciones: { informe?: boolean }) => Promise<void>;
 };
@@ -105,11 +120,11 @@ const bloque = (id: string, sobretitulo: string, titulo: string, intro: string, 
   tarjetas: tarjetas.map((t) => ({ ...t, id: (t as Tarjeta).id ?? slug(t.titulo) })),
 });
 
-const articulo = (t: Tarjeta) => {
+const articulo = (t: Tarjeta, informe = false) => {
   const art = document.createElement("article");
   art.className = `tarjeta${t.ancha ? " tarjeta--ancha" : ""}`;
   art.dataset.tarjeta = t.id;
-  art.innerHTML = `<h4>${t.titulo}</h4><p class="tarjeta__n">${t.n} respuestas</p><p class="tarjeta__destacado">${t.destacado}</p><div class="grafico__lienzo"></div>${t.extra ?? ""}`;
+  art.innerHTML = `<h4>${t.titulo}</h4><p class="tarjeta__n">${t.n} respuestas</p><p class="tarjeta__destacado">${t.destacado}</p><div class="grafico__lienzo"></div>${informe ? "" : (t.extra ?? "")}`;
   return art;
 };
 
@@ -126,10 +141,10 @@ export async function dibujarTarjetas(rejilla: Element, tarjetas: Tarjeta[], o: 
       pendientes.push(t.especial(hueco, o));
       continue;
     }
-    const art = articulo(t);
+    const art = articulo(t, o.informe);
     rejilla.append(art);
     const pintar = () => {
-      t.dibujar(art.querySelector(".grafico__lienzo")!);
+      (o.informe && t.informe ? t.informe : t.dibujar)(art.querySelector(".grafico__lienzo")!);
       art.classList.add("visible");
     };
     if (o.informe) pintar();
@@ -235,6 +250,15 @@ export function definir(rs: Respuesta[]): Panel {
       titulo: "Y más allá de Gran Canaria", n: rs.length - mismo.length - otros.length,
       destacado: `${fmtPct(rs.length - mismo.length - otros.length, rs.length)} viene de fuera de Gran Canaria: de otras islas, del resto de España o de otros países. Estos son sus mapas de procedencia.`,
       dibujar: () => {},
+      informe: (el) => {
+        const colorProc = new Map(proc.map((c) => [c.etiqueta, c.color]));
+        const fuera = ["Otra isla canaria", "Turismo nacional", "Turismo internacional"];
+        const lugares = fuera.flatMap((pr) => cats(rs.filter((r) => r.Procedencia === pr), "Lugar_concreto", () => colorProc.get(NOMBRE[pr] ?? pr) ?? AZUL, undefined));
+        const orden = lugares.sort((a, b) => b.n - a.n), resto = orden.slice(12);
+        const visibles = resto.length ? [...orden.slice(0, 12), { etiqueta: `Otros ${resto.length} lugares`, n: resto.reduce((x, c) => x + c.n, 0), color: "#9ca3af" }] : orden;
+        barras(el, visibles, { titulo: "Lugares de procedencia fuera de Gran Canaria", sinPct: true });
+        leyendaDe(el, proc.filter((c) => fuera.map((f) => NOMBRE[f] ?? f).includes(c.etiqueta)));
+      },
       extra: `<div class="mapas-descarga">${[["autonomica", "Canarias"], ["nacional", "España"], ["europea", "Europa"], ["mundial", "América"]]
         .map(([f, t]) => `<a href="${BASE}descargas/procedencia_escala_${f}.jpg" download><img src="${BASE}descargas/mini/${f}.webp" alt="Mapa de procedencia: ${t}" loading="lazy" width="640" height="452"/><span>↓ ${t}</span></a>`)
         .join("")}</div>`,
@@ -313,6 +337,30 @@ export function definir(rs: Respuesta[]): Panel {
     { titulo: "¿Le condiciona que no se recomiende el baño?", n: n("Cierre_bano"), destacado: `A ${fmtPct(suma(bano, ["No"]), total(bano))} no le condiciona: desde 2017 el baño no se recomienda y desde 2021 hay bandera roja permanente.`, dibujar: (el) => anillo(el, bano, { titulo: "Cierre al baño", centro: bano.find((c) => c.etiqueta === "No") ?? bano[0], centroTexto: "no le condiciona" }) },
     { titulo: "¿Le condiciona el cierre al tráfico?", n: n("Cierre_coches"), destacado: `A ${fmtPct(suma(coche, ["No"]), total(coche))} no le condiciona que no se pueda entrar en coche.`, dibujar: (el) => anillo(el, coche, { titulo: "Cierre al tráfico", centro: coche.find((c) => c.etiqueta === "No") ?? coche[0], centroTexto: "no le condiciona" }) },
     { titulo: "El cierre al baño, según la frecuencia de visita", n: n("Cierre_bano"), ancha: true, destacado: "A quien viene a diario no le condiciona; a quien viene solo unas pocas veces al año, bastante más.", dibujar: (el) => apiladas(el, cruce(rs, "Frecuencia_visita", "Cierre_bano", (k) => NO_ES_BUENO[k]), { titulo: "Frecuencia y cierre al baño", leyenda: bano }) },
+  ]));
+  // 6 · Cruces de datos para el informe: combinaciones que ayudan a leer el resto.
+  const colorDe = (campo: string) => semaforoDe(campo);
+  const sitDia = cruce(conSit, "Tipo_dia", "Situacion_playa", colorSit);
+  const satHora = cruce(rs, "Franja_horaria", "Numero_usuarios_percibido", colorDe("Numero_usuarios_percibido"));
+  const comHora = cruce(rs, "Franja_horaria", "Grado_comodidad", colorDe("Grado_comodidad"));
+  const espZona = conMinimo(cruce(rs, "Unidad_concreta", "Superficie_disponible", colorDe("Superficie_disponible")));
+  const abandEdad = cruce(rs, "Franja_edad", "Condicionante_mayor_afluencia", (k) => NO_ES_BUENO[k]);
+  const servEdad = cruce(rs.filter((r) => r.Servicios_suficientes), "Franja_edad", "Servicios_suficientes", (k) => SI_NO[k]);
+  const medioFrec = cruce(rs, "Frecuencia_visita", "Medio_llegada", colorDe("Medio_llegada"));
+  const tiempoProc = cruce(rs, "Procedencia", "Tiempo_estancia", (k) => estancia[ORDEN.Tiempo_estancia.indexOf(k)]);
+  const masGente = ["Algo más gente", "Mucha más gente"], saturado = ["Alto", "Muy alto"], comodo = ["Muy cómodo", "Cómodo"], amplio = ["Muy amplio", "Amplio"];
+  const noComodo = ["Adecuado", "Incómodo", "Muy incómodo"], noAmplio = ["Adecuado", "Insuficiente", "Muy insuficiente"];
+  const peorHora = dondeMas(comHora, noComodo).grupo, menosEspacio = dondeMas(espZona, noAmplio).grupo, masEspacio = dondeMas(espZona, amplio).grupo;
+  const horaSat = dondeMas(satHora, saturado).grupo, edadSensible = dondeMas(abandEdad, ["Sí"]).grupo;
+  bloques.push(bloque("cruces", "Cruces de datos", "¿Qué se ve al cruzar las respuestas?", "Combinaciones de preguntas que ayudan a entender cuándo, dónde y para quién cambia la experiencia en el Confital.", [
+    { titulo: "Cómo veían la playa, según el tipo de día", n: conSit.length, destacado: `En días de alta afluencia, ${enGrupo(sitDia, "Día de alta afluencia", masGente)} veía más gente de la deseada; en días de baja afluencia, ${enGrupo(sitDia, "Día de baja afluencia", masGente)}.`, dibujar: (el) => apiladas(el, sitDia, { titulo: "Tipo de día y situación de la playa", leyenda: sit }) },
+    { titulo: "Saturación percibida, según la hora", n: n("Numero_usuarios_percibido"), destacado: `${horaSat === "Mañana" ? "Por la mañana" : horaSat === "Tarde" ? "Por la tarde" : "Al mediodía"} es cuando más gente percibe mucha o demasiada gente: ${enGrupo(satHora, horaSat, saturado)}.`, dibujar: (el) => apiladas(el, satHora, { titulo: "Franja horaria y saturación percibida", leyenda: sat }) },
+    { titulo: "Comodidad, según la hora", n: n("Grado_comodidad"), destacado: `${peorHora === "Mañana" ? "Por la mañana" : peorHora === "Tarde" ? "Por la tarde" : "Al mediodía"} es cuando menos cómodo se está: ${enGrupo(comHora, peorHora, comodo)} estaba cómodo o muy cómodo.`, dibujar: (el) => apiladas(el, comHora, { titulo: "Franja horaria y comodidad", leyenda: com }) },
+    { titulo: "Espacio disponible, según la zona", n: n("Superficie_disponible"), destacado: `Donde menos espacio se siente es en ${conArticulo(menosEspacio)}: ${enGrupo(espZona, menosEspacio, amplio)} lo ve amplio o muy amplio, frente al ${enGrupo(espZona, masEspacio, amplio)} en ${conArticulo(masEspacio)}.`, dibujar: (el) => apiladas(el, espZona, { titulo: "Unidad ambiental y espacio disponible", leyenda: sup }) },
+    { titulo: "¿Dejaría de venir?, según la edad", n: n("Condicionante_mayor_afluencia"), destacado: `La edad más sensible a la afluencia es «${edadSensible.toLowerCase()}»: ${enGrupo(abandEdad, edadSensible, ["Sí"])} dejaría de venir si hubiera más gente (en total, ${fmtPct(suma(aband, ["Sí"]), total(aband))}).`, dibujar: (el) => apiladas(el, abandEdad, { titulo: "Edad y abandono si hubiera más gente", leyenda: aband }) },
+    { titulo: "¿Son suficientes los servicios?, según la edad", n: n("Servicios_suficientes"), destacado: `Entre 31 y 45 años, ${enGrupo(servEdad, "Entre 31 y 45", ["No"])} cree que no son suficientes; entre los mayores de 65, ${enGrupo(servEdad, "Mayores de 65", ["No"])}.`, dibujar: (el) => apiladas(el, servEdad, { titulo: "Edad y servicios suficientes", leyenda: serv }) },
+    { titulo: "Cómo llegan, según la frecuencia de visita", n: n("Medio_llegada"), ancha: true, destacado: `Quien viene a diario llega a pie en ${enGrupo(medioFrec, "Diaria", ["Caminando"])} de los casos; quien viene una vez al año o menos, en ${enGrupo(medioFrec, "Una vez al año o menos", ["Caminando"])}.`, dibujar: (el) => apiladas(el, medioFrec, { titulo: "Frecuencia de visita y medio de llegada", leyenda: medio }) },
+    { titulo: "Cuánto tiempo se quedan, según de dónde vienen", n: n("Tiempo_estancia"), ancha: true, destacado: `Entre quienes viven en la ciudad, ${enGrupo(tiempoProc, "Mismo municipio", ["Menos de 1 hora"])} se queda menos de una hora y ${enGrupo(tiempoProc, "Mismo municipio", ["Más de 4 horas"])}, más de cuatro; entre los turistas internacionales, ${enGrupo(tiempoProc, "Turismo internacional", ["Entre 1 y 2 horas"])} se queda entre 1 y 2 horas.`, dibujar: (el) => apiladas(el, tiempoProc, { titulo: "Procedencia y tiempo de estancia", leyenda: tiempo }) },
   ]));
   return { kpis, bloques };
 }
