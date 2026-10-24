@@ -754,6 +754,286 @@ p {
   }
 }
 
+/* --- Propuesta de solución --- */
+.mapa-propuesta::after {
+  height: 22%;
+}
+.paso__meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem !important;
+  font-weight: 650;
+  color: var(--tinta) !important;
+}
+.muestra--ruta {
+  width: 22px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--c);
+  flex: none;
+}
+.paso__foto {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 12px;
+  margin: 4px 0 8px;
+}
+.confi-dice {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  margin: 14px 0 6px;
+}
+.confi-dice img {
+  width: 64px;
+  height: auto;
+  flex: none;
+}
+.confi-dice p {
+  position: relative;
+  margin: 0 0 18px;
+  padding: 10px 14px;
+  background: var(--azul-suave);
+  border-radius: 14px 14px 14px 4px;
+  font-size: 0.92rem !important;
+  color: var(--tinta) !important;
+}
+.confi-dice b {
+  display: block;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--azul);
+}
+.usos-ruta {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0;
+  display: grid;
+  gap: 10px;
+}
+.usos-ruta li {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+}
+.usos-ruta b {
+  display: block;
+  font-size: 0.92rem;
+}
+.usos-ruta span:not(.muestra) {
+  font-size: 0.85rem;
+  color: var(--gris);
+}
+.lista-paneles {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 0;
+  display: grid;
+  gap: 2px;
+}
+.lista-paneles button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  font: inherit;
+  font-size: 0.92rem;
+  text-align: left;
+  color: var(--tinta);
+  cursor: pointer;
+}
+.lista-paneles button:hover,
+.lista-paneles button:focus-visible {
+  background: var(--fondo-2);
+}
+.pin-ruta {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--c);
+  color: #111827;
+  font: 750 0.78rem/1 var(--fuente);
+  font-style: normal;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.35);
+}
+.pin-ruta--mapa {
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.25s var(--muelle);
+}
+.pin-ruta--mapa:hover,
+.pin-ruta--mapa:focus-visible {
+  transform: scale(1.2);
+}
+.oculto {
+  visibility: hidden;
+}
+.confi-mapa img {
+  width: 52px;
+  height: auto;
+  filter: drop-shadow(0 3px 4px rgb(0 0 0 / 0.5));
+}
+.confi-mapa.salta img {
+  animation: salto-confi 0.7s var(--muelle);
+}
+@keyframes salto-confi {
+  0% { transform: translateY(0) scale(0.6); opacity: 0; }
+  50% { transform: translateY(-18px) scale(1.05); opacity: 1; }
+  100% { transform: none; }
+}
+.carteles-cabecera {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+.carteles-cabecera img {
+  width: 140px;
+  height: auto;
+  flex: none;
+}
+.carteles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 18px;
+  margin-top: 36px;
+}
+.cartel {
+  display: block;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  color: var(--tinta);
+}
+.cartel img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  object-position: top;
+  border-radius: 14px;
+  box-shadow: var(--sombra);
+  transition: transform 0.3s var(--muelle);
+}
+.cartel:hover img {
+  transform: translateY(-3px);
+}
+.cartel span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  font-weight: 650;
+  font-size: 0.95rem;
+}
+.panel-dialogo {
+  width: min(720px, 100% - 24px);
+  max-height: min(88svh, 900px);
+  padding: 28px 28px 20px;
+  border: 0;
+  border-radius: var(--radio);
+  box-shadow: 0 24px 64px rgb(0 0 0 / 0.35);
+  color: var(--tinta);
+}
+.panel-dialogo::backdrop {
+  background: rgb(11 16 32 / 0.6);
+  backdrop-filter: blur(2px);
+}
+.panel-dialogo__cerrar {
+  position: sticky;
+  top: 0;
+  float: right;
+  margin: -12px -12px 0 0;
+}
+.panel-dialogo__cerrar button {
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--fondo-2);
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.panel-dialogo__ruta {
+  padding-right: 40px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--gris);
+}
+.panel-dialogo h3 {
+  font-size: 1.6rem;
+  letter-spacing: -0.02em;
+  margin: 6px 0 2px;
+}
+.panel-dialogo__tema {
+  color: var(--azul);
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+.panel-dialogo figure {
+  margin: 0 0 16px;
+}
+.panel-dialogo figure img {
+  width: 100%;
+  border-radius: 12px;
+  display: block;
+}
+.panel-dialogo figcaption {
+  font-size: 0.75rem;
+  color: var(--gris);
+  margin-top: 4px;
+}
+.panel-dialogo p,
+.panel-dialogo li {
+  color: var(--gris);
+}
+.panel-dialogo__nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 20px;
+  border-top: 1px solid var(--linea);
+  padding-top: 14px;
+}
+.panel-dialogo__nav button {
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 650;
+  color: var(--azul);
+  cursor: pointer;
+  text-align: left;
+}
+.panel-dialogo__nav button:last-child {
+  text-align: right;
+}
+@media (max-width: 860px) {
+  .carteles-cabecera img {
+    width: 90px;
+  }
+  .panel-dialogo {
+    padding: 22px 18px 16px;
+  }
+}
+
 /* Mapa de procedencia: plano (sin «cielo») y con rótulos HTML sobre la ortofoto */
 .mapa-flujos::after {
   display: none;

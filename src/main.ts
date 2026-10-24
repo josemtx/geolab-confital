@@ -6,6 +6,7 @@ import { embudo } from "./secciones/embudo";
 import { iniciarDestacados } from "./secciones/paginas-datos";
 import { portada } from "./secciones/portada";
 import { procedencia } from "./secciones/procedencia";
+import { propuesta } from "./secciones/propuesta";
 import { unidades } from "./secciones/unidades";
 
 partirPalabras();
@@ -52,3 +53,4 @@ unidades();
 conteos();
 iniciarDestacados(procedencia());
 conflictos();
+propuesta();
