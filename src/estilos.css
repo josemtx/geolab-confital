@@ -21,6 +21,7 @@
   --valle: #38bdf8;
   --pico: #ef4444;
   --exito: #10b981;
+  --naranja: #f97316;
 
   --fuente: "Inter Variable", system-ui, -apple-system, "Segoe UI", sans-serif;
   --ancho: 1200px;
@@ -257,7 +258,7 @@ p {
 }
 .nav__enlaces {
   display: flex;
-  gap: 28px;
+  gap: 32px;
   margin-left: auto;
 }
 .nav__enlaces a {
@@ -268,6 +269,38 @@ p {
 }
 .nav__enlaces a:hover {
   opacity: 1;
+}
+/* Bloque por el que se va */
+.nav__enlaces a {
+  padding: 6px 12px;
+  margin: -6px -12px;
+  border-radius: 99px;
+  transition: background 0.3s, color 0.3s;
+}
+.nav--solida .nav__enlaces a[aria-current="location"] {
+  opacity: 1;
+  color: var(--azul);
+  background: var(--azul-suave);
+  font-weight: 650;
+}
+.nav__bloque {
+  display: none;
+}
+@media (max-width: 860px) {
+  /* La etiqueta del bloque sustituye al nombre, que no cabe junto a ella */
+  .nav--solida:has(.nav__bloque:not(:empty)) .nav__marca span {
+    display: none;
+  }
+  .nav--solida .nav__bloque:not(:empty) {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 650;
+    color: var(--azul);
+    background: var(--azul-suave);
+    padding: 4px 10px;
+    border-radius: 99px;
+    white-space: nowrap;
+  }
 }
 @media (max-width: 860px) {
   .nav__enlaces {
@@ -623,18 +656,24 @@ p {
   font-size: 0.95rem;
   margin: 18px 0 8px;
 }
-.conflictos__foto {
-  margin: 14px 0 0;
+.conflictos__fotos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
 }
-.conflictos__foto img {
+.conflictos__fotos--una {
+  grid-template-columns: 1fr;
+}
+.conflictos__fotos img {
   width: 100%;
-  border-radius: 12px;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 10px;
   display: block;
+  transition: transform 0.3s var(--muelle);
 }
-.conflictos__foto figcaption {
-  font-size: 0.75rem;
-  color: var(--gris);
-  margin-top: 4px;
+.conflictos__fotos a:hover img {
+  transform: scale(1.03);
 }
 .conflictos__cita {
   margin: 0 0 10px;
@@ -1142,6 +1181,9 @@ p {
 }
 .panel-bloque:last-child {
   padding-bottom: clamp(80px, 10vw, 140px);
+}
+.texto-entre-graficos {
+  margin: 64px 0 8px;
 }
 .titular--bloque {
   font-size: clamp(2.2rem, 5vw, 4rem);

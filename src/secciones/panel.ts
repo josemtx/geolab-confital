@@ -12,6 +12,9 @@ export const SEMAFORO = ["#15803d", "#84cc16", "#facc15", "#f97316", "#dc2626"];
 const SI_NO = { Sí: "#16a34a", No: "#dc2626", Depende: "#9ca3af" } as Record<string, string>;
 const NO_ES_BUENO = { No: "#16a34a", Sí: "#dc2626", Depende: "#9ca3af" } as Record<string, string>;
 const AZUL = "#0038ff";
+const SITUACION = ["#3b82f6", "#93c5fd", "#16a34a", "#f97316", "#dc2626"];
+const CAPACIDAD = ["#15803d", "#84cc16", "#f97316", "#dc2626"];
+const TIPO_DIA: Record<string, string> = { Pico: "#ef4444", Valle: "#38bdf8" };
 
 const ORDEN: Record<string, string[]> = {
   Franja_edad: ["Entre 18 y 30", "Entre 31 y 45", "Entre 46 y 65", "Mayores de 65"],
@@ -26,8 +29,17 @@ const ORDEN: Record<string, string[]> = {
   Numero_usuarios_percibido: ["Muy bajo", "Bajo", "Adecuado", "Alto", "Muy alto"],
   Grado_comodidad: ["Muy cómodo", "Cómodo", "Adecuado", "Incómodo", "Muy incómodo"],
   Servicio: ["Muy bueno", "Bueno", "Adecuado", "Mejorable", "Muy mejorable"],
+  Tipo_dia: ["Pico", "Valle"],
+  Franja_horaria: ["Mañana", "Mediodía", "Tarde"],
+  Situacion_playa: ["Mucho menos concurrido de lo que desearía", "Algo menos concurrido de lo que desearía", "En un nivel ideal", "Algo más concurrida de lo que desearía", "Mucho más concurrida de lo que desearía"],
+  Capacidad_acoger_mas_gente: ["Sí, muchas más", "Sí, algunas más", "No, está en su límite", "No, ya está saturada"],
 };
-const NOMBRE: Record<string, string> = { "Otro municipio de Gran Canaria": "Otro municipio de G. C.", "Otra isla canaria": "Otra isla" };
+const NOMBRE: Record<string, string> = {
+  "Otro municipio de Gran Canaria": "Otro municipio de G. C.", "Otra isla canaria": "Otra isla",
+  Pico: "Día de alta afluencia", Valle: "Día de baja afluencia",
+  "Mucho menos concurrido de lo que desearía": "Mucha menos gente", "Algo menos concurrido de lo que desearía": "Algo menos gente",
+  "En un nivel ideal": "Nivel ideal", "Algo más concurrida de lo que desearía": "Algo más gente", "Mucho más concurrida de lo que desearía": "Mucha más gente",
+};
 const ICONOS: Record<string, string> = {
   "Proximidad a lugar de residencia": "🏠", "Recomendación de amigos o familia": "👥", "Internet o redes sociales": "📱",
   "Actividades laborales, deportivas o académicas": "🎓", "Turismo o actividad guiada": "🧭", "Señalización o visita casual": "🪧",
@@ -239,12 +251,18 @@ export function definir(rs: Respuesta[]): Panel {
   // 3 · Cómo usa el espacio
   const frec = cats(rs, "Frecuencia_visita", () => AZUL), act = cats(rs, "Actividad_desarrollar", () => AZUL), comp = cats(rs, "Tipo_compania", porRango);
   const estancia = ["#bfdbfe", "#60a5fa", "#2563eb", "#1e3a8a"];
+  const dia = cats(rs, "Tipo_dia", (k) => TIPO_DIA[k]), franja = cats(rs, "Franja_horaria", () => AZUL), zonas = cats(rs, "Unidad_concreta", () => AZUL, undefined);
+  const tiempo = cats(rs, "Tiempo_estancia", (k) => estancia[ORDEN.Tiempo_estancia.indexOf(k)]);
   bloques.push(bloque("habitos", "Hábitos de uso", "¿Cómo usan el Confital?", "Llegan caminando, solos o en pareja, y sobre todo a pasear.", [
     { titulo: "Cómo llegan", n: n("Medio_llegada"), destacado: `${fmtPct(suma(medio, ["Caminando"]), total(medio))} llega caminando. Los colores van del medio más sostenible (verde) al que más contamina (rojo).`, dibujar: (el) => barras(el, medio, { titulo: "Medio de llegada" }) },
     { titulo: "Con qué frecuencia vienen", n: n("Frecuencia_visita"), destacado: `${fmtPct(suma(frec, ["Diaria", "Semanal"]), total(frec))} viene cada día o cada semana.`, dibujar: (el) => barras(el, frec, { titulo: "Frecuencia" }) },
     { titulo: "Cómo llegan, según de dónde vienen", n: n("Medio_llegada"), ancha: true, destacado: "Quien vive cerca llega a pie; quien viene de otros municipios, en coche.", dibujar: (el) => apiladas(el, cruce(rs, "Procedencia", "Medio_llegada", semaforoDe("Medio_llegada")), { titulo: "Procedencia y medio de llegada", leyenda: medio }) },
     { titulo: "Qué hacen en el Confital", n: n("Actividad_desarrollar"), destacado: `${fmtPct(act[0].n, total(act))} viene, sobre todo, a ${act[0].etiqueta.toLowerCase()}.`, dibujar: (el) => barras(el, act, { titulo: "Actividad principal", vertical: true }) },
     { titulo: "Con quién vienen", n: n("Tipo_compania"), destacado: `${fmtPct(suma(comp, ["Solo", "2 personas"]), total(comp))} viene solo o en pareja.`, dibujar: (el) => barras(el, comp, { titulo: "Compañía" }) },
+    { titulo: "En qué tipo de día vinieron", n: n("Tipo_dia"), destacado: `${fmtPct(suma(dia, ["Día de alta afluencia"]), total(dia))} respondió en un día de alta afluencia (fin de semana o festivo).`, dibujar: (el) => anillo(el, dia, { titulo: "Tipo de día", centro: dia[0], centroTexto: "día de alta afluencia" }) },
+    { titulo: "A qué hora vinieron", n: n("Franja_horaria"), destacado: `La ${mayor(franja).etiqueta.toLowerCase()} es la franja más visitada: ${fmtPct(mayor(franja).n, total(franja))} de las respuestas.`, dibujar: (el) => barras(el, franja, { titulo: "Franja horaria" }) },
+    { titulo: "Qué zonas usan más", n: n("Unidad_concreta"), destacado: `${zonas[0].etiqueta} y ${zonas[1].etiqueta.toLowerCase()} reúnen ${fmtPct(zonas[0].n + zonas[1].n, total(zonas))} de las respuestas.`, dibujar: (el) => barras(el, zonas, { titulo: "Unidad ambiental" }) },
+    { titulo: "Cuánto tiempo se quedan", n: n("Tiempo_estancia"), destacado: `Lo más habitual es quedarse ${mayor(tiempo).etiqueta.toLowerCase()}: ${fmtPct(mayor(tiempo).n, total(tiempo))}.`, dibujar: (el) => barras(el, tiempo, { titulo: "Tiempo de estancia" }) },
     {
       titulo: "Cuánto tiempo se quedan, según lo que hacen", n: n("Tiempo_estancia"), ancha: true, destacado: "Quien pasea suele quedarse entre 1 y 2 horas; quien va a tomar el sol, en la mayoría de los casos más de 2.",
       dibujar: (el) => apiladas(el, cruce(rs, "Actividad_desarrollar", "Tiempo_estancia", (k) => estancia[ORDEN.Tiempo_estancia.indexOf(k)]), { titulo: "Actividad y tiempo de estancia", leyenda: ORDEN.Tiempo_estancia.map((e, i) => ({ etiqueta: e, n: 0, color: estancia[i] })) }),
@@ -254,6 +272,9 @@ export function definir(rs: Respuesta[]): Panel {
   // 4 · Cómo se siente
   const sat = cats(rs, "Numero_usuarios_percibido", semaforoDe("Numero_usuarios_percibido")), com = cats(rs, "Grado_comodidad", semaforoDe("Grado_comodidad"));
   const aband = cats(rs, "Condicionante_mayor_afluencia", (k) => NO_ES_BUENO[k], ["Sí", "No", "Depende"]), haria = cats(rs, "Que_harias_mas_usuarios", semaforoDe("Que_harias_mas_usuarios"));
+  const colorSit = (k: string) => SITUACION[ORDEN.Situacion_playa.indexOf(k)], colorCap = (k: string) => CAPACIDAD[ORDEN.Capacidad_acoger_mas_gente.indexOf(k)];
+  const sit = cats(rs, "Situacion_playa", colorSit), cap = cats(rs, "Capacidad_acoger_mas_gente", colorCap);
+  const conSit = rs.filter((r) => r.Situacion_playa), conCap = rs.filter((r) => r.Capacidad_acoger_mas_gente);
   bloques.push(bloque("sensacion", "Percepción", "¿Cómo se siente la gente?", "Aunque a veces se supera la capacidad, la mayoría siente que hay espacio de sobra y está cómoda.", [
     { titulo: "Espacio disponible", n: n("Superficie_disponible"), destacado: `${fmtPct(suma(sup, ["Muy amplio", "Amplio"]), total(sup))} siente que el espacio es amplio o muy amplio.`, dibujar: (el) => barras(el, sup, { titulo: "Espacio disponible" }) },
     { titulo: "Cuánta gente sentían a su alrededor", n: n("Numero_usuarios_percibido"), destacado: `Solo ${fmtPct(suma(sat, ["Alto", "Muy alto"]), total(sat))} percibía mucha o demasiada gente.`, dibujar: (el) => barras(el, sat, { titulo: "Saturación percibida" }) },
@@ -261,6 +282,11 @@ export function definir(rs: Respuesta[]): Panel {
     { titulo: "¿Dejaría de venir si hubiera más gente?", n: n("Condicionante_mayor_afluencia"), destacado: `${fmtPct(suma(aband, ["No"]), total(aband))} seguiría viniendo aunque aumentara la afluencia.`, dibujar: (el) => anillo(el, aband, { titulo: "Abandonaría si hubiera más gente", centro: aband.find((c) => c.etiqueta === "No") ?? aband[0], centroTexto: "no dejaría de venir" }) },
     { titulo: "Qué haría si hubiera más gente", n: n("Que_harias_mas_usuarios"), destacado: `${fmtPct(haria[0].n, total(haria))} se quedaría igualmente; solo ${fmtPct(suma(haria, ["No volver más"]), total(haria))} no volvería.`, dibujar: (el) => barras(el, haria, { titulo: "Qué haría" }) },
     { titulo: "Qué haría, según de dónde viene", n: n("Que_harias_mas_usuarios"), ancha: true, destacado: "Quien vive en la ciudad es quien más tiende a quedarse igualmente; quien viene de otros municipios de la isla, bastante menos.", dibujar: (el) => apiladas(el, cruce(rs.filter((r) => r.Que_harias_mas_usuarios), "Procedencia", "Que_harias_mas_usuarios", semaforoDe("Que_harias_mas_usuarios")), { titulo: "Procedencia y decisión", leyenda: haria }) },
+    { titulo: "¿Cómo veían la playa? Frente a la gente que desearían", n: n("Situacion_playa"), destacado: `${fmtPct(suma(sit, ["Nivel ideal"]), total(sit))} la veía en un nivel ideal; solo ${fmtPct(suma(sit, ["Algo más gente", "Mucha más gente"]), total(sit))}, con más gente de la que desearía.`, dibujar: (el) => barras(el, sit, { titulo: "Situación de la playa" }) },
+    { titulo: "Cómo veían la playa, según la zona", n: conSit.length, ancha: true, destacado: "En todas las zonas predomina el nivel ideal; quien ve más gente de la deseada es minoría en cada una de ellas.", dibujar: (el) => apiladas(el, cruce(conSit, "Unidad_concreta", "Situacion_playa", colorSit), { titulo: "Unidad ambiental y situación de la playa", leyenda: sit }) },
+    { titulo: "¿Cabe más gente en el Confital?", n: n("Capacidad_acoger_mas_gente"), destacado: `${fmtPct(suma(cap, ["Sí, muchas más", "Sí, algunas más"]), total(cap))} cree que podría acoger a más personas; ${fmtPct(suma(cap, ["No, ya está saturada"]), total(cap))} lo ve ya saturado.`, dibujar: (el) => barras(el, cap, { titulo: "Capacidad de acoger más gente" }) },
+    { titulo: "¿Cabe más gente?, según de dónde vienen", n: conCap.length, ancha: true, destacado: "Quien viene de fuera de la isla cree que cabe más gente; quienes vienen de otros municipios de Gran Canaria son quienes más lo ven en su límite o saturado.", dibujar: (el) => apiladas(el, cruce(conCap, "Procedencia", "Capacidad_acoger_mas_gente", colorCap), { titulo: "Procedencia y capacidad de acoger más gente", leyenda: cap }) },
+    { titulo: "¿Cabe más gente?, según la frecuencia de visita", n: conCap.length, ancha: true, destacado: "Quien viene a diario o cada semana cree que cabe más gente; quien viene pocas veces al año lo ve más a menudo en su límite.", dibujar: (el) => apiladas(el, cruce(conCap, "Frecuencia_visita", "Capacidad_acoger_mas_gente", colorCap), { titulo: "Frecuencia de visita y capacidad de acoger más gente", leyenda: cap }) },
   ]));
   // La percepción por unidades abre el bloque de «Cómo se siente».
   bloques[bloques.length - 1].tarjetas.unshift({

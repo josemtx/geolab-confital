@@ -1,5 +1,5 @@
 // Mapa de conflictos (SIG participativo): un mapa fijo con un punto numerado por conflicto.
-// Al pulsarlo se abre su ficha: descripción, foto de campo y lo que dijeron las personas usuarias.
+// Al pulsarlo se abre su ficha: descripción, lo que dijeron las personas usuarias y fotos de campo.
 // Grupos y colores, los del mapa de conflictos de Adrián (TFM, figura 37): puntos, zonas y líneas.
 import { Map as MapaGL, Marker, NavigationControl, type ExpressionSpecification, type GeoJSONSourceSpecification, type MapLayerMouseEvent } from "maplibre-gl";
 import { alAcercarse, BASE, cargar, esMovil } from "../comun";
@@ -8,22 +8,23 @@ import { cajaDe, coordenadas, estiloOrto, type Caja } from "../mapa";
 type Rasgo = { type: "Feature"; properties: Record<string, string | number>; geometry: { type: string; coordinates: unknown } };
 type Coleccion = { type: "FeatureCollection"; features: Rasgo[] };
 type Tipo = "punto" | "zona" | "linea";
-type Conflicto = { id: string; tipo: Tipo; num: number; corto: string; titulo: string; texto: string; color: string; citas: { texto: string; quien: string }[]; pins: number[][]; rasgos: Rasgo[]; foto?: string };
+type Conflicto = { id: string; tipo: Tipo; num: number; corto: string; titulo: string; texto: string; color: string; citas: { texto: string; quien: string }[]; pins: number[][]; rasgos: Rasgo[]; fotos: number };
 
-// Nombre corto (para la lista y el punto), color y foto de cada conflicto, por su número en la capa.
-const FICHAS: Record<string, { corto: string; color: string; foto?: string }> = {
-  p5: { corto: "Asentamientos precarios", color: "#f5e03a" },
-  p1: { corto: "Control de accesos fuera de uso", color: "#e02020" },
-  p2: { corto: "Pasarela en mal estado", color: "#111827" },
-  p4: { corto: "Carteles rotos y desactualizados", color: "#22c7f0" },
-  p3: { corto: "Aseos cerrados y poco socorrismo", color: "#3be36b" },
-  p7: { corto: "Patrimonio con grafitis", color: "#d63aa8" },
-  p6: { corto: "Basura y malos olores bajo la pasarela", color: "#7a3b16" },
-  z4: { corto: "Vertido de escombros", color: "#111827", foto: "escombros" },
-  z3: { corto: "Perros sueltos", color: "#e02020", foto: "perros" },
-  z2: { corto: "Masificación en días de buen tiempo", color: "#f5a623", foto: "masificacion" },
-  z1: { corto: "Baño no recomendado", color: "#1f5fbf", foto: "agua" },
-  l1: { corto: "Caminos informales", color: "#c9a227" },
+// Nombre corto (para la lista y el punto), color y número de fotos de cada conflicto, por su número
+// en la capa (las fotos, de Adrián, en img/conflictos/<id>_<n>.webp).
+const FICHAS: Record<string, { corto: string; color: string; fotos: number }> = {
+  p5: { corto: "Asentamientos precarios", color: "#f5e03a", fotos: 4 },
+  p1: { corto: "Control de accesos fuera de uso", color: "#e02020", fotos: 2 },
+  p2: { corto: "Pasarela en mal estado", color: "#111827", fotos: 1 },
+  p4: { corto: "Carteles rotos y desactualizados", color: "#22c7f0", fotos: 2 },
+  p3: { corto: "Aseos cerrados y poco socorrismo", color: "#3be36b", fotos: 1 },
+  p7: { corto: "Patrimonio con grafitis", color: "#d63aa8", fotos: 1 },
+  p6: { corto: "Basura y malos olores bajo la pasarela", color: "#7a3b16", fotos: 2 },
+  z4: { corto: "Vertido de escombros", color: "#111827", fotos: 1 },
+  z3: { corto: "Perros sueltos", color: "#e02020", fotos: 3 },
+  z2: { corto: "Masificación en días de buen tiempo", color: "#f5a623", fotos: 4 },
+  z1: { corto: "Baño no recomendado", color: "#1f5fbf", fotos: 2 },
+  l1: { corto: "Caminos informales", color: "#c9a227", fotos: 4 },
 };
 const GRUPOS: { tipo: Tipo; titulo: string }[] = [
   { tipo: "punto", titulo: "Puntos de conflicto" },
@@ -120,8 +121,8 @@ export async function conflictos() {
       <h3 class="conflictos__titulo">${c.corto}</h3>
       <p class="conflictos__oficial">${c.titulo}</p>
       <p>${c.texto}</p>
-      ${c.foto ? `<figure class="conflictos__foto"><img src="${BASE}img/conflictos/${c.foto}.webp" alt="Foto de campo: ${c.corto.toLowerCase()}" loading="lazy"/><figcaption>Foto de campo del estudio</figcaption></figure>` : ""}
-      ${c.citas.length ? `<h4>Lo que dicen las personas usuarias</h4>${c.citas.map((x) => `<blockquote class="conflictos__cita"><p>«${x.texto}»</p>${x.quien ? `<footer>${x.quien}</footer>` : ""}</blockquote>`).join("")}` : ""}`;
+      ${c.citas.length ? `<h4>Lo que dicen las personas usuarias</h4>${c.citas.map((x) => `<blockquote class="conflictos__cita"><p>«${x.texto}»</p>${x.quien ? `<footer>${x.quien}</footer>` : ""}</blockquote>`).join("")}` : ""}
+      ${c.fotos ? `<h4>Fotos de campo</h4><div class="conflictos__fotos${c.fotos === 1 ? " conflictos__fotos--una" : ""}">${Array.from({ length: c.fotos }, (_, i) => `<a href="${BASE}img/conflictos/${c.id}_${i + 1}.webp" target="_blank" rel="noopener"><img src="${BASE}img/conflictos/${c.id}_${i + 1}.webp" alt="Foto de campo ${i + 1}: ${c.corto.toLowerCase()}" loading="lazy"/></a>`).join("")}</div>` : ""}`;
   };
   panel.addEventListener("click", (e) => {
     const b = (e.target as Element).closest<HTMLElement>("[data-id], [data-volver]");

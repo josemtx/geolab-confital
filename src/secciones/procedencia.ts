@@ -17,7 +17,9 @@ const personas = (n: number) => `${n} ${n === 1 ? "persona" : "personas"}`;
 const lista = (xs: string[]) => (xs.length > 1 ? `${xs.slice(0, -1).join(", ")} y ${xs.at(-1)}` : xs[0] ?? "");
 
 const MISMO = "Mismo municipio", OTRO = "Otro municipio de Gran Canaria";
-const FLUJO = "#ffd166", ZONA = "#8ba5ff";
+// Líneas naranjas; barrios y municipios en violeta, más intenso cuantas más personas aportan;
+// la Ciudad Baja, en turquesa. Colores que contrastan entre sí y con la ortofoto.
+const FLUJO = "#ff7a1a", ZONA_POCA = "#d8b4fe", ZONA_MUCHA = "#7c3aed", BAJA = "#2dd4bf";
 
 // Arco suave del origen al Confital (curva cuadrática, en grados: a esta escala basta).
 const arco = (o: number[], d: number[], N = 48) => {
@@ -174,20 +176,21 @@ export function procedencia() {
 
     mapa.on("load", () => {
       const vacio = { type: "FeatureCollection", features: [] } as GeoJSONSourceSpecification["data"];
-      const intensidad = (max: number): ExpressionSpecification => ["case", ["==", ["get", "on"], 1], ["interpolate", ["linear"], ["get", "n"], 1, 0.3, 30, max], 0];
+      const encendida: ExpressionSpecification = ["case", ["==", ["get", "on"], 1], 0.72, 0];
+      const tono: ExpressionSpecification = ["interpolate", ["linear"], ["get", "n"], 1, ZONA_POCA, 30, ZONA_MUCHA];
       for (const [id, fc] of [["barrios", barrios], ["municipios", munis]] as const) {
         mapa.addSource(id, { type: "geojson", data: fc as unknown as GeoJSONSourceSpecification["data"] });
-        mapa.addLayer({ id: `${id}-relleno`, type: "fill", source: id, paint: { "fill-color": ZONA, "fill-opacity": intensidad(0.75) } });
-        mapa.addLayer({ id: `${id}-borde`, type: "line", source: id, paint: { "line-color": "#ffffff", "line-opacity": 0.35, "line-width": 0.6 } });
+        mapa.addLayer({ id: `${id}-relleno`, type: "fill", source: id, paint: { "fill-color": tono, "fill-opacity": encendida } });
+        mapa.addLayer({ id: `${id}-borde`, type: "line", source: id, paint: { "line-color": "#3b0764", "line-opacity": 0.55, "line-width": 0.7 } });
       }
       mapa.addSource("ciudad-baja", { type: "geojson", data: baja as unknown as GeoJSONSourceSpecification["data"] });
-      mapa.addLayer({ id: "ciudad-baja-relleno", type: "fill", source: "ciudad-baja", layout: { visibility: "none" }, paint: { "fill-color": "#ffffff", "fill-opacity": 0.45 } });
-      mapa.addLayer({ id: "ciudad-baja", type: "line", source: "ciudad-baja", layout: { visibility: "none", "line-join": "round" }, paint: { "line-color": "#ffffff", "line-width": 2 } });
+      mapa.addLayer({ id: "ciudad-baja-relleno", type: "fill", source: "ciudad-baja", layout: { visibility: "none" }, paint: { "fill-color": BAJA, "fill-opacity": 0.35 } });
+      mapa.addLayer({ id: "ciudad-baja", type: "line", source: "ciudad-baja", layout: { visibility: "none", "line-join": "round" }, paint: { "line-color": BAJA, "line-width": 3 } });
       mapa.addSource("flujos", { type: "geojson", data: vacio });
       const ancho: ExpressionSpecification = ["interpolate", ["linear"], ["get", "n"], 1, 1.6, 30, 15];
       for (const escala of ["barrio", "municipio"]) {
         const filtro: ExpressionSpecification = ["==", ["get", "escala"], escala];
-        mapa.addLayer({ id: `flujos-${escala}-sombra`, type: "line", source: "flujos", filter: filtro, layout: { "line-cap": "round" }, paint: { "line-color": "#0b1020", "line-opacity": 0.45, "line-width": ["+", ancho, 3] } });
+        mapa.addLayer({ id: `flujos-${escala}-sombra`, type: "line", source: "flujos", filter: filtro, layout: { "line-cap": "round" }, paint: { "line-color": "#3a1600", "line-opacity": 0.55, "line-width": ["+", ancho, 3] } });
         mapa.addLayer({ id: `flujos-${escala}`, type: "line", source: "flujos", filter: filtro, layout: { "line-cap": "round" }, paint: { "line-color": FLUJO, "line-opacity": 0.95, "line-width": ancho } });
       }
       mapa.addSource("confital", { type: "geojson", data: { type: "Point", coordinates: CONFITAL } });

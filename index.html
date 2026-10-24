@@ -19,6 +19,7 @@
         <img src="img/logo-128.webp" alt="" width="40" height="36" />
         <span>GeoLab <strong>Confital</strong></span>
       </a>
+      <span class="nav__bloque" data-nav-bloque aria-hidden="true"></span>
       <nav class="nav__enlaces" aria-label="Secciones">
         <a href="#historia">La historia</a>
         <a href="#capacidad">Primera investigación</a>
@@ -204,14 +205,50 @@
               <h3>Personas que entran al Confital cada hora</h3>
               <p>Cada línea es un día de conteo. Toca un mes para destacarlo.</p>
             </figcaption>
-            <div class="selector" role="group" aria-label="Tipo de día" data-selector-conteos>
+            <div class="selector" role="group" aria-label="Tipo de día" data-selector-entradas>
               <button type="button" data-tipo="Pico" aria-pressed="true">Días de alta afluencia</button>
               <button type="button" data-tipo="Valle" aria-pressed="false">Días de baja afluencia</button>
               <button type="button" data-tipo="Todos" aria-pressed="false">Todos</button>
             </div>
-            <div class="grafico__lienzo" id="grafico-conteos"></div>
-            <ul class="leyenda" id="leyenda-conteos"></ul>
-            <p class="fuente">Fuente: conteos manuales en la entrada principal, diciembre 2024 – octubre 2025.</p>
+            <div class="grafico__lienzo" id="grafico-entradas"></div>
+            <ul class="leyenda" id="leyenda-entradas"></ul>
+            <p class="fuente">Fuente: conteos manuales en la entrada principal, diciembre 2024 – octubre 2025. Total de entradas de cada día junto a su mes.</p>
+          </figure>
+          <div class="contenedor--estrecho sin-margen texto-entre-graficos">
+            <h3 class="titular titular--bloque" data-revelar>¿Y cuándo se van?</h3>
+            <p class="entradilla" data-revelar>Las salidas también se contaron. Salen menos personas de las que entran, y sus picos llegan en otro momento: <strong>entre las 11:30 y las 12:30</strong>, justo después del pico de entradas de la mañana, y <strong>entre las 17:30 y las 18:30</strong>, dos horas después del de la tarde. Las mañanas tienen un uso más efímero (sobre todo deporte); las tardes, más largo (ocio y reposo).</p>
+          </div>
+          <figure class="grafico" data-revelar>
+            <figcaption>
+              <h3>Personas que salen del Confital cada hora</h3>
+              <p>Mismos días y mismos colores que el gráfico de entradas.</p>
+            </figcaption>
+            <div class="selector" role="group" aria-label="Tipo de día" data-selector-salidas>
+              <button type="button" data-tipo="Pico" aria-pressed="true">Días de alta afluencia</button>
+              <button type="button" data-tipo="Valle" aria-pressed="false">Días de baja afluencia</button>
+              <button type="button" data-tipo="Todos" aria-pressed="false">Todos</button>
+            </div>
+            <div class="grafico__lienzo" id="grafico-salidas"></div>
+            <ul class="leyenda" id="leyenda-salidas"></ul>
+            <p class="fuente">* Al día de baja afluencia de diciembre/enero le faltan las salidas de la mañana: su total solo incluye la tarde.</p>
+          </figure>
+          <figure class="grafico" data-revelar>
+            <figcaption>
+              <h3>Entradas, salidas y permanencia en un día medio</h3>
+              <p data-balance-resumen></p>
+            </figcaption>
+            <div class="selector" role="group" aria-label="Tipo de día" data-selector-balance>
+              <button type="button" data-tipo="Pico" aria-pressed="false">Días de alta afluencia</button>
+              <button type="button" data-tipo="Valle" aria-pressed="false">Días de baja afluencia</button>
+              <button type="button" data-tipo="Todos" aria-pressed="true">Todos</button>
+            </div>
+            <div class="grafico__lienzo" id="grafico-balance"></div>
+            <ul class="leyenda leyenda--fija">
+              <li><span class="muestra" style="--c: var(--azul)"></span>Entran</li>
+              <li><span class="muestra" style="--c: var(--naranja)"></span>Salen</li>
+              <li><span class="muestra muestra--linea"></span>Siguen dentro (acumulado)</li>
+            </ul>
+            <p class="fuente">Media de los días de conteo con entradas y salidas completas (se excluye el día de baja afluencia de diciembre/enero).</p>
           </figure>
         </div>
       </section>
